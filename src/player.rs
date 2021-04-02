@@ -38,6 +38,11 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) {
             VirtualKeyCode::Numpad2 |
             VirtualKeyCode::J => try_move_player(0, 1, &mut gs.ecs),
 
+            VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
+
             _ => {} // Key not recognised
         }
     }
