@@ -66,7 +66,7 @@ pub fn draw_map(map: &[TileType], ctx: &mut Rltk) {
     }
 }
 
-pub fn new_map_rooms_and_corridors() -> Vec<TileType> {
+pub fn new_map_rooms_and_corridors() -> (Vec<Rect>, Vec<TileType>) {
     let mut map = vec![TileType::Wall; 80*50];
 
     let mut rooms: Vec<Rect> = Vec::new();
@@ -105,9 +105,7 @@ pub fn new_map_rooms_and_corridors() -> Vec<TileType> {
         }
     }
 
-    apply_horizontal_tunnel(&mut map, 25, 40, 23);
-
-    map
+    (rooms, map)
 }
 
 fn apply_room_to_map(room: &Rect, map: &mut [TileType]) {
