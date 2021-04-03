@@ -16,6 +16,7 @@ pub struct Map {
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
     pub visible_tiles: Vec<bool>,
+    pub blocked: Vec<bool>,
 }
 
 impl Map {
@@ -54,7 +55,13 @@ impl Map {
     fn is_exit_valid(&self, x:i32, y:i32) -> bool {
         if x < 1 || x > self.width-1 || y < 1 || y > self.height-1 { return false; }
         let idx = self.xy_idx(x, y);
-        self.tiles[idx as usize] != TileType::Wall
+        !self.blocked[idx]
+    }
+
+    pub fn populate_blocked(&mut self) {
+        for (i, tile) in self.tiles.iter_mut().enumerate() {
+            self.blocked[i] = *tile == TileType::Wall; // Walls block their position.
+        }
     }
 
     /// Makes a new map using the algorithm from the tcod tutorial.
@@ -67,6 +74,7 @@ impl Map {
             height: 50,
             revealed_tiles: vec![false; 80*50],
             visible_tiles: vec![false; 80*50],
+            blocked: vec![false; 80*50],
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -117,12 +125,12 @@ impl Algorithm2D for Map {
 
 impl BaseMap for Map {
     fn is_opaque(&self, idx:usize) -> bool {
-        self.tiles[idx as usize] == TileType::Wall
+        self.tiles[idx] == TileType::Wall
     }
 
     fn get_pathing_distance(&self, idx1:usize, idx2:usize) -> f32 {
         let w = self.width as usize;
-        let p1 = Point::new(idx1 %w, idx1 / w);
+        let p1 = Point::new(idx1 % w, idx1 / w);
         let p2 = Point::new(idx2 % w, idx2 / w);
         rltk::DistanceAlg::Pythagoras.distance2d(p1, p2)
     }
