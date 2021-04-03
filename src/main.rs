@@ -16,6 +16,10 @@ mod monster_ai_system;
 use monster_ai_system::MonsterAI;
 mod map_indexing_system;
 use map_indexing_system::MapIndexingSystem;
+mod melee_combat_system;
+use melee_combat_system::MeleeCombatSystem;
+mod damage_system;
+use damage_system::DamageSystem;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { Paused, Running }
@@ -36,6 +40,11 @@ impl State {
         let mut mapindex = MapIndexingSystem{};
         mapindex.run_now(&self.ecs);
 
+        let mut melee = MeleeCombatSystem{};
+        melee.run_now(&self.ecs);
+        let mut damage = DamageSystem{};
+        damage.run_now(&self.ecs);
+
         self.ecs.maintain();
     }
 }
@@ -45,9 +54,10 @@ impl GameState for State {
         ctx.cls(); // Clear the screen
 
         if self.runstate == RunState::Running {
-            console::log("---[[new turn]]---");
             self.run_systems();
+            damage_system::delete_the_dead(&mut self.ecs);
             self.runstate = RunState::Paused;
+            console::log("---[[new turn]]---");
         } else {
             self.runstate = player_input(self, ctx);
         }
@@ -85,6 +95,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Name>();
     gs.ecs.register::<BlocksTile>();
     gs.ecs.register::<CombatStats>();
+    gs.ecs.register::<WantsToMelee>();
+    gs.ecs.register::<SufferDamage>();
 
     // Add the map
     let map: Map = Map::new_map_rooms_and_corridors();
@@ -114,10 +126,10 @@ fn main() -> rltk::BError {
             .with(Name{ name: format!("{} #{}", &name, i)})
             .with(BlocksTile {})
             .with(CombatStats{
-                max_hp: 30,
-                hp: 30,
-                defense: 2,
-                power: 5,
+                max_hp: 16,
+                hp: 16,
+                defense: 1,
+                power: 4,
             })
             .build();
     }
@@ -126,7 +138,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(Point::new(player_x, player_y));
 
     // Create player entity
-    gs.ecs
+    let player_entity = gs.ecs
         .create_entity()
         .with(Position {x: player_x, y: player_y})
         .with(Renderable {
@@ -138,12 +150,14 @@ fn main() -> rltk::BError {
         .with(Viewshed{ visible_tiles: Vec::new(), range: 8 , dirty: true})
         .with(Name{name: "Player".to_string()})
         .with(CombatStats{
-            max_hp: 16,
-            hp: 16,
-            defense: 1,
-            power: 4,
+            max_hp: 30,
+            hp: 30,
+            defense: 2,
+            power: 5,
         })
         .build();
+
+    gs.ecs.insert(player_entity);
 
     rltk::main_loop(context, gs)
 }
