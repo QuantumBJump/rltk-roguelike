@@ -40,7 +40,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     // Player movement
     match ctx.key {
-        None => { return RunState::Paused } // Nothing happened
+        None => { return RunState::AwaitingInput } // Nothing happened
         Some(key) => match key {
             // Cardinal directions
             VirtualKeyCode::Left |
@@ -65,8 +65,8 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
             VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
 
-            _ => { return RunState::Paused } // Key not recognised
+            _ => { return RunState::AwaitingInput } // Key not recognised
         }
     }
-    RunState::Running
+    RunState::PlayerTurn
 }
