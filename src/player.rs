@@ -73,6 +73,9 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             // Collect item
             VirtualKeyCode::G => get_item(&mut gs.ecs),
 
+            // Open inventory
+            VirtualKeyCode::I => return RunState::ShowInventory,
+
             // Cardinal directions
             VirtualKeyCode::Left |
             VirtualKeyCode::Numpad4 |

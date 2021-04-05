@@ -28,7 +28,7 @@ mod inventory_system;
 use inventory_system::ItemCollectionSystem;
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn }
+pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory }
 
 pub struct State{
     pub ecs: World,
@@ -60,6 +60,24 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, ctx : &mut Rltk) {
         ctx.cls(); // Clear the screen
+
+        // Draw map
+        draw_map(&self.ecs, ctx);
+
+        // Draw entities
+        {
+            let positions = self.ecs.read_storage::<Position>();
+            let renderables = self.ecs.read_storage::<Renderable>();
+            let map = self.ecs.fetch::<Map>();
+
+            for (pos, render) in (&positions, &renderables).join() {
+                let idx = map.xy_idx(pos.x, pos.y);
+                if map.visible_tiles[idx] {
+                    ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+                }
+            }
+        }
+
         let mut newrunstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
@@ -82,6 +100,11 @@ impl GameState for State {
                 self.run_systems();
                 newrunstate = RunState::AwaitingInput;
             }
+            RunState::ShowInventory => {
+                if gui::show_inventory(self, ctx) == gui::ItemMenuResult::Cancel {
+                    newrunstate = RunState::AwaitingInput;
+                }
+            }
         }
 
         {
@@ -89,20 +112,6 @@ impl GameState for State {
             *runwriter = newrunstate;
         }
         damage_system::delete_the_dead(&mut self.ecs);
-
-        // Draw map
-        draw_map(&self.ecs, ctx);
-
-        let positions = self.ecs.read_storage::<Position>();
-        let renderables = self.ecs.read_storage::<Renderable>();
-        let map = self.ecs.fetch::<Map>();
-
-        for (pos, render) in (&positions, &renderables).join() {
-            let idx = map.xy_idx(pos.x, pos.y);
-            if map.visible_tiles[idx] {
-                ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
-            }
-        }
 
         gui::draw_ui(&self.ecs, ctx);
     }
