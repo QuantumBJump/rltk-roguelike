@@ -42,6 +42,8 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     match ctx.key {
         None => { return RunState::AwaitingInput } // Nothing happened
         Some(key) => match key {
+            // Wait button
+            VirtualKeyCode::Numpad5 => { return RunState::PlayerTurn },
             // Cardinal directions
             VirtualKeyCode::Left |
             VirtualKeyCode::Numpad4 |
