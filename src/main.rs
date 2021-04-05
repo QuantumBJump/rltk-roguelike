@@ -24,6 +24,8 @@ mod gui;
 mod gamelog;
 pub use gamelog::GameLog;
 mod spawner;
+mod inventory_system;
+use inventory_system::ItemCollectionSystem;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn }
@@ -47,6 +49,9 @@ impl State {
         melee.run_now(&self.ecs);
         let mut damage = DamageSystem{};
         damage.run_now(&self.ecs);
+
+        let mut pickup = ItemCollectionSystem{};
+        pickup.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -124,6 +129,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
     gs.ecs.register::<Potion>();
+    gs.ecs.register::<WantsToPickupItem>();
+    gs.ecs.register::<InBackpack>();
 
     // Add the map
     let map: Map = Map::new_map_rooms_and_corridors();
