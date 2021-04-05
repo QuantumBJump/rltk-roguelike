@@ -43,11 +43,6 @@ pub struct CombatStats {
     pub power: i32,
 }
 
-#[derive(Component, Debug, Clone)]
-pub struct WantsToMelee {
-    pub target: Entity,
-}
-
 #[derive(Component, Debug)]
 pub struct SufferDamage {
     pub amount: Vec<i32>
@@ -77,8 +72,20 @@ pub struct InBackpack {
     pub owner: Entity,
 }
 
+// Intents
+
 #[derive(Component, Debug, Clone)]
 pub struct WantsToPickupItem {
     pub collected_by: Entity,
     pub item: Entity,
+}
+
+#[derive(Component, Debug)]
+pub struct WantsToDrinkPotion {
+    pub potion: Entity
+}
+
+#[derive(Component, Debug, Clone)]
+pub struct WantsToMelee {
+    pub target: Entity,
 }
