@@ -1,6 +1,6 @@
 use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
-use super::{ CombatStats, Player, Renderable, Name, Position, Viewshed, Monster, BlocksTile };
+use super::{ CombatStats, Player, Renderable, Name, Position, Viewshed, Monster, BlocksTile, Rect, map::MAPWIDTH };
 
 /// Spawns the player and returns their entity object.
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
@@ -18,12 +18,48 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(CombatStats {
             max_hp: 30,
             hp: 30,
-            defense: 2,
+            defense: 20,
             power: 5,
         })
         .build()
 }
 
+const MAX_MONSTERS: i32 = 4; /// Max monsters per room
+const MAX_ITEMS: i32 = 2; /// Max items per room
+
+/// Fills a room with stuff!
+pub fn spawn_room(ecs: &mut World, room: &Rect) {
+    let mut monster_spawn_points: Vec<usize> = Vec::new();
+
+    // Scope to keep borrow checker happy
+    {
+        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+        let num_monsters = rng.roll_dice(1, MAX_MONSTERS + 2) - 3; // Results w/  MAX_MONSTERS=4: 0, 0, 0, 1, 2, 3
+
+        for _i in 0..num_monsters {
+            let mut added = false;
+            while !added {
+                // Choose random point in the room
+                let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
+                let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
+                let idx = (y * MAPWIDTH) + x;
+                if !monster_spawn_points.contains(&idx) {
+                    // If not already spawning a monster there, add a new monster
+                    monster_spawn_points.push(idx);
+                    added = true;
+                }
+            }
+        }
+    }
+
+    // Actually spawn the monsters
+    for idx in monster_spawn_points.iter() {
+        let x = *idx % MAPWIDTH;
+        let y = *idx / MAPWIDTH;
+        random_monster(ecs, x as i32, y as i32);
+    }
+
+}
 /// Spawns a random monster at the given location.
 pub fn random_monster(ecs: &mut World, x: i32, y: i32) {
     let roll: i32;

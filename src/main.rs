@@ -1,4 +1,4 @@
-use rltk::{Rltk, GameState, RGB, Point, console};
+use rltk::{Rltk, GameState, Point, console};
 use specs::prelude::*;
 
 mod components;
@@ -132,10 +132,10 @@ fn main() -> rltk::BError {
 
     // Seed rng
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
-    // Create a monster at the center of each room (except the first, the player's there)
+
+    // Fill each room (except the first) with monsters.
     for room in map.rooms.iter().skip(1) {
-        let (x, y) = room.center();
-        spawner::random_monster(&mut gs.ecs, x, y);
+        spawner::spawn_room(&mut gs.ecs, room);
     }
 
     gs.ecs.insert(map);
