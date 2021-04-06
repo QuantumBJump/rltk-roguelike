@@ -3,6 +3,7 @@ use super::{
     WantsToPickupItem, Name, InBackpack, Position, gamelog::GameLog,
     ProvidesHealing, CombatStats, WantsToUseItem, WantsToDropItem,
     Consumable, InflictsDamage, Map, SufferDamage, AreaOfEffect,
+    Stunned,
 };
 
 pub struct ItemCollectionSystem {}
@@ -51,13 +52,14 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, CombatStats>,
         WriteStorage<'a, SufferDamage>,
         ReadStorage<'a, AreaOfEffect>,
+        WriteStorage<'a, Stunned>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (
             player_entity, mut gamelog, map, entities, mut wants_use, names,
             consumables, healing, inflict_damage, mut combat_stats,
-            mut suffer_damage, aoe) = data;
+            mut suffer_damage, aoe, mut stunned) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
             let mut used_item = true;
@@ -90,6 +92,7 @@ impl<'a> System<'a> for ItemUseSystem {
                     }
                 }
             }
+
             let item_heals = healing.get(useitem.item);
             match item_heals {
                 None => {}
@@ -122,6 +125,28 @@ impl<'a> System<'a> for ItemUseSystem {
                         used_item = true;
                     }
                 }
+            }
+
+            let mut add_stun = Vec::new();
+            {
+                let causes_stun = stunned.get(useitem.item);
+                match causes_stun {
+                    None => {}
+                    Some(stunned) => {
+                        used_item = false;
+                        for mob in targets.iter() {
+                            add_stun.push((*mob, stunned.turns));
+                            if entity == *player_entity {
+                                let mob_name = names.get(*mob).unwrap();
+                                let item_name = names.get(useitem.item).unwrap();
+                                gamelog.entries.push(format!("You use {} on {}, stunning them.", item_name.name, mob_name.name));
+                            }
+                        }
+                    }
+                }
+            }
+            for mob in add_stun.iter() {
+                stunned.insert(mob.0, Stunned{ turns: mob.1 }).expect("Unable to insert status.");
             }
 
             let consumable = consumables.get(useitem.item);
