@@ -199,6 +199,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Ranged>();
     gs.ecs.register::<InflictsDamage>();
     gs.ecs.register::<WantsToUseItem>();
+    gs.ecs.register::<AreaOfEffect>();
 
     // Add the map
     let map: Map = Map::new_map_rooms_and_corridors();

@@ -1,8 +1,9 @@
 use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
-use super::{ CombatStats, Player, Renderable, Name, Position, Viewshed,
+use super::{
+    CombatStats, Player, Renderable, Name, Position, Viewshed,
     Monster, BlocksTile, Rect, map::MAPWIDTH, Item, Consumable,
-    ProvidesHealing, Ranged, InflictsDamage };
+    ProvidesHealing, Ranged, InflictsDamage, AreaOfEffect, };
 
 /// Spawns the player and returns their entity object.
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
@@ -38,8 +39,8 @@ pub fn spawn_room(ecs: &mut World, room: &Rect) {
     // Scope to keep borrow checker happy
     {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        let num_monsters = rng.roll_dice(1, MAX_MONSTERS + 2) - 2; // Results w/  MAX_MONSTERS=4: 0, 0, 0, 1, 2, 3
-        let num_items = rng.roll_dice(1, MAX_ITEMS + 2) -2;
+        let num_monsters = rng.roll_dice(1, MAX_MONSTERS + 3) - 3; // Results w/  MAX_MONSTERS=4: 0, 0, 0, 1, 2, 3, 4
+        let num_items = rng.roll_dice(1, MAX_ITEMS + 2) -2; // Results w/ MAX_ITEMS=2: 0, 0, 1, 2
 
         for _i in 0..num_monsters {
             let mut added = false;
@@ -129,10 +130,11 @@ fn random_item(ecs: &mut World, x: i32, y: i32) {
     let roll: i32;
     {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        roll = rng.roll_dice(1, 2);
+        roll = rng.roll_dice(1, 3);
     }
     match roll {
         1 => { health_potion(ecs, x, y) }
+        2 => { fireball_scroll(ecs, x, y) }
         _ => {magic_missile_scroll(ecs, x, y) }
     }
 }
@@ -166,5 +168,23 @@ fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Consumable{})
         .with(Ranged{ range: 6 })
         .with(InflictsDamage{ damage: 8 })
+        .build();
+}
+
+fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable{
+            glyph: rltk::to_cp437(')'),
+            fg: RGB::named(rltk::ORANGE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name { name: "Fireball Scroll".to_string() })
+        .with(Item{})
+        .with(Consumable{})
+        .with(Ranged{ range: 6 })
+        .with(InflictsDamage{ damage: 20 })
+        .with(AreaOfEffect{ radius: 3 })
         .build();
 }
