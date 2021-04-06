@@ -2,7 +2,8 @@ use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use super::{
     Position, Player, State, Map, Viewshed, RunState, CombatStats, WantsToMelee, Item, gamelog::GameLog,
-    WantsToPickupItem, gui};
+    WantsToPickupItem,
+};
 use std::cmp::{min, max};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
@@ -105,7 +106,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
 
             // Menu
-            VirtualKeyCode::Escape => return RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame },
+            VirtualKeyCode::Escape => return RunState::SaveGame,
 
             _ => { return RunState::AwaitingInput } // Key not recognised
         }

@@ -1,5 +1,7 @@
 use rltk::{Rltk, GameState, Point, console};
 use specs::prelude::*;
+extern crate serde;
+use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
 
 mod components;
 pub use components::*;
@@ -28,11 +30,13 @@ mod inventory_system;
 use inventory_system::ItemCollectionSystem;
 use inventory_system::ItemUseSystem;
 use inventory_system::ItemDropSystem;
+mod saveload_system;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
     ShowTargeting { range: i32, item: Entity},
     MainMenu{ menu_selection: gui::MainMenuSelection },
+    SaveGame,
 }
 
 pub struct State{
@@ -118,7 +122,11 @@ impl GameState for State {
                     gui::MainMenuResult::Selected{ selected } => {
                         match selected {
                             gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
-                            gui::MainMenuSelection::LoadGame => newrunstate = RunState::PreRun,
+                            gui::MainMenuSelection::LoadGame => {
+                                saveload_system::load_game(&mut self.ecs);
+                                newrunstate = RunState::AwaitingInput;
+                                saveload_system::delete_save();
+                            }
                             gui::MainMenuSelection::Quit => { ::std::process::exit(0); }
                         }
                     }
@@ -186,6 +194,10 @@ impl GameState for State {
                     }
                 }
             }
+            RunState::SaveGame => {
+                saveload_system::save_game(&mut self.ecs);
+                newrunstate = RunState::MainMenu{ menu_selection: gui::MainMenuSelection::LoadGame };
+            }
         }
 
         {
@@ -220,7 +232,6 @@ fn main() -> rltk::BError {
     gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<InBackpack>();
-    gs.ecs.register::<WantsToDrinkPotion>();
     gs.ecs.register::<WantsToDropItem>();
     gs.ecs.register::<Consumable>();
     gs.ecs.register::<Ranged>();
@@ -228,6 +239,10 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<AreaOfEffect>();
     gs.ecs.register::<Stunned>();
+    gs.ecs.register::<SimpleMarker<SerializeMe>>();
+    gs.ecs.register::<SerializationHelper>();
+
+    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     // Add the map
     let map: Map = Map::new_map_rooms_and_corridors();
@@ -247,7 +262,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(map);
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_x, player_y));
-    gs.ecs.insert(RunState::PreRun);
+    gs.ecs.insert(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(gamelog::GameLog{ entries: vec!["Welcome to Rustlike!".to_string()]});
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
 
