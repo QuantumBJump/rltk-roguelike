@@ -30,6 +30,7 @@ mod inventory_system;
 use inventory_system::ItemCollectionSystem;
 use inventory_system::ItemUseSystem;
 use inventory_system::ItemDropSystem;
+use inventory_system::ItemRemoveSystem;
 mod saveload_system;
 pub mod random_table;
 
@@ -39,6 +40,7 @@ pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventor
     MainMenu{ menu_selection: gui::MainMenuSelection },
     SaveGame,
     NextLevel,
+    ShowRemoveItem,
 }
 
 pub struct State{
@@ -69,6 +71,9 @@ impl State {
 
         let mut drop_items = ItemDropSystem{};
         drop_items.run_now(&self.ecs);
+
+        let mut item_remove = ItemRemoveSystem{};
+        item_remove.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -204,6 +209,19 @@ impl GameState for State {
                 self.goto_next_level();
                 newrunstate = RunState::PreRun;
             }
+            RunState::ShowRemoveItem => {
+                let result = gui::remove_item_menu(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        let mut intent = self.ecs.write_storage::<WantsToRemoveItem>();
+                        intent.insert(*self.ecs.fetch::<Entity>(), WantsToRemoveItem{ item: item_entity }).expect("Unable to insert intent");
+                        newrunstate = RunState::PlayerTurn;
+                    }
+                }
+            }
         }
 
         {
@@ -320,6 +338,7 @@ fn main() -> rltk::BError {
     let mut gs = State{
         ecs: World::new(),
     };
+    // Component registration
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
@@ -332,13 +351,14 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
     gs.ecs.register::<ProvidesHealing>();
-    gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<InBackpack>();
+    gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<WantsToDropItem>();
+    gs.ecs.register::<WantsToUseItem>();
+    gs.ecs.register::<WantsToRemoveItem>();
     gs.ecs.register::<Consumable>();
     gs.ecs.register::<Ranged>();
     gs.ecs.register::<InflictsDamage>();
-    gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<AreaOfEffect>();
     gs.ecs.register::<Stunned>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();

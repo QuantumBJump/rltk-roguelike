@@ -3,7 +3,7 @@ use super::{
     WantsToPickupItem, Name, InBackpack, Position, gamelog::GameLog,
     ProvidesHealing, CombatStats, WantsToUseItem, WantsToDropItem,
     Consumable, InflictsDamage, Map, SufferDamage, AreaOfEffect,
-    Stunned, Equippable, Equipped
+    Stunned, Equippable, Equipped, WantsToRemoveItem,
 };
 
 pub struct ItemCollectionSystem {}
@@ -231,5 +231,36 @@ impl<'a> System<'a> for ItemDropSystem {
         }
 
         drop_intent.clear();
+    }
+}
+
+pub struct ItemRemoveSystem{}
+
+impl<'a> System<'a> for ItemRemoveSystem {
+    type SystemData = (
+        Entities<'a>,
+        ReadExpect<'a, Entity>,
+        ReadStorage<'a, Name>,
+        WriteExpect<'a, GameLog>,
+        WriteStorage<'a, WantsToRemoveItem>,
+        WriteStorage<'a, Equipped>,
+        WriteStorage<'a, InBackpack>,
+    );
+
+    fn run(&mut self, data: Self::SystemData) {
+        let (
+            entities, player_entity, names, mut gamelog, mut wants_remove,
+            mut equipped, mut backpack
+        ) = data;
+
+        for (entity, to_remove) in (&entities, &wants_remove).join() {
+            equipped.remove(to_remove.item);
+            backpack.insert(to_remove.item, InBackpack{ owner: entity }).expect("Unable to insert backpack");
+            if entity == *player_entity {
+                gamelog.entries.push(format!("You unequip the {}.", names.get(to_remove.item).unwrap().name));
+            }
+        }
+
+        wants_remove.clear();
     }
 }

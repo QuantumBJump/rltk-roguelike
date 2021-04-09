@@ -156,3 +156,8 @@ pub struct WantsToUseItem {
     pub item: Entity,
     pub target: Option<rltk::Point>,
 }
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct WantsToRemoveItem {
+    pub item: Entity,
+}

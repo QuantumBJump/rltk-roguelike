@@ -142,6 +142,9 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             // Drop item
             VirtualKeyCode::D => return RunState::ShowDropItem,
 
+            // Remove equipped item
+            VirtualKeyCode::R => return RunState::ShowRemoveItem,
+
             // Cardinal directions
             VirtualKeyCode::Left |
             VirtualKeyCode::Numpad4 |
