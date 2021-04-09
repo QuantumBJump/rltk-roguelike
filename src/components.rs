@@ -19,6 +19,11 @@ pub struct Renderable {
     pub render_order: i32,
 }
 
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct ParticleLifetime {
+    pub lifetime_ms: f32,
+}
+
 #[derive(Component, Serialize, Deserialize, Clone, Debug)]
 pub struct Player {}
 

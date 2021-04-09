@@ -40,7 +40,7 @@ pub fn save_game(ecs: &mut World) {
             InflictsDamage, AreaOfEffect, Stunned, ProvidesHealing, InBackpack,
             WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             SerializationHelper, Equippable, Equipped, MeleePowerBonus,
-            DefenseBonus, WantsToRemoveItem
+            DefenseBonus, WantsToRemoveItem, ParticleLifetime
         );
     }
 }
@@ -88,7 +88,7 @@ pub fn load_game(ecs: &mut World) {
             InflictsDamage, AreaOfEffect, Stunned, ProvidesHealing, InBackpack,
             WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             SerializationHelper, Equippable, Equipped, MeleePowerBonus,
-            DefenseBonus, WantsToRemoveItem
+            DefenseBonus, WantsToRemoveItem, ParticleLifetime
         );
     }
 

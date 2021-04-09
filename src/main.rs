@@ -33,6 +33,7 @@ use inventory_system::ItemDropSystem;
 use inventory_system::ItemRemoveSystem;
 mod saveload_system;
 pub mod random_table;
+mod particle_system;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -76,6 +77,9 @@ impl State {
         let mut item_remove = ItemRemoveSystem{};
         item_remove.run_now(&self.ecs);
 
+        let mut particles = particle_system::ParticleSpawnSystem{};
+        particles.run_now(&self.ecs);
+
         self.ecs.maintain();
     }
 }
@@ -89,6 +93,7 @@ impl GameState for State {
         }
 
         ctx.cls(); // Clear the screen
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
 
         match newrunstate {
             // Only draw the map/entities/gui if we're not in the main menu
@@ -423,6 +428,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Equipped>();
     gs.ecs.register::<MeleePowerBonus>();
     gs.ecs.register::<DefenseBonus>();
+    gs.ecs.register::<ParticleLifetime>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
@@ -447,6 +453,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(gamelog::GameLog{ entries: vec!["Welcome to Rustlike!".to_string()]});
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
+    gs.ecs.insert(particle_system::ParticleBuilder::new());
 
     rltk::main_loop(context, gs)
 }
