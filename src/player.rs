@@ -108,24 +108,6 @@ fn skip_turn(ecs: &mut World) -> RunState {
 }
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
-    let mut dead: bool = false;
-    {
-        let player_entity = gs.ecs.fetch::<Entity>();
-        let combat_stats = gs.ecs.read_storage::<CombatStats>();
-        let entities = gs.ecs.entities();
-        for (entity, stats) in (&entities, &combat_stats).join() {
-            if entity == *player_entity {
-                if stats.hp <= 0 {
-                    dead = true;
-                }
-            }
-
-        }
-    }
-
-    if dead {
-        return RunState::AwaitingInput;
-    }
     // Player movement
     match ctx.key {
         None => { return RunState::AwaitingInput } // Nothing happened
