@@ -31,6 +31,7 @@ use inventory_system::ItemCollectionSystem;
 use inventory_system::ItemUseSystem;
 use inventory_system::ItemDropSystem;
 mod saveload_system;
+pub mod random_table;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
