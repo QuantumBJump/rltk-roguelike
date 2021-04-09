@@ -4,7 +4,8 @@ use super::{
     ProvidesHealing, CombatStats, WantsToUseItem, WantsToDropItem,
     Consumable, InflictsDamage, Map, SufferDamage, AreaOfEffect,
     Stunned, Equippable, Equipped, WantsToRemoveItem,
-    particle_system::ParticleBuilder,
+    particle_system::ParticleBuilder, ProvidesFood, HungerClock,
+    HungerState,
 };
 
 pub struct ItemCollectionSystem {}
@@ -59,6 +60,8 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, InBackpack>,
         WriteExpect<'a, ParticleBuilder>,
         ReadStorage<'a, Position>,
+        ReadStorage<'a, ProvidesFood>,
+        WriteStorage<'a, HungerClock>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -66,7 +69,8 @@ impl<'a> System<'a> for ItemUseSystem {
             player_entity, mut gamelog, map, entities, mut wants_use, names,
             consumables, healing, inflict_damage, mut combat_stats,
             mut suffer_damage, aoe, mut stunned, equippable, mut equipped,
-            mut backpack, mut particle_builder, positions
+            mut backpack, mut particle_builder, positions, provides_food,
+            mut hungerclocks,
         ) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
@@ -152,6 +156,21 @@ impl<'a> System<'a> for ItemUseSystem {
                                 particle_builder.request(pos.x, pos.y, rltk::RGB::named(rltk::GREEN), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('♥'), 200.0);
                             }
                         }
+                    }
+                }
+            }
+
+            let item_edible = provides_food.get(useitem.item);
+            match item_edible {
+                None => {}
+                Some(_) => {
+                    _used_item = true;
+                    let target = targets[0];
+                    let hc = hungerclocks.get_mut(target);
+                    if let Some(hc) = hc {
+                        hc.state = HungerState::WellFed;
+                        hc.duration = 20;
+                        gamelog.entries.push(format!("You eat the {}", names.get(useitem.item).unwrap().name));
                     }
                 }
             }

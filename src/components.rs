@@ -86,6 +86,9 @@ pub struct ProvidesHealing {
     pub heal_amount: i32
 }
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ProvidesFood {}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InBackpack {
     pub owner: Entity,
