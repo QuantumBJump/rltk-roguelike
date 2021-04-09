@@ -18,6 +18,11 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         ctx.draw_bar_horizontal(28, 43, 51, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
     }
 
+    // Draw depth
+    let map = ecs.fetch::<Map>();
+    let depth = format!("Depth: {}", map.depth);
+    ctx.print_color(2, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
+
     // Draw recent gamelog
     let log = ecs.fetch::<GameLog>();
 
@@ -247,23 +252,23 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
 
     if let RunState::MainMenu{ menu_selection: selection } = *runstate {
         if selection == MainMenuSelection::NewGame {
-            ctx.print_color_centered(24, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Begin new game");
+            ctx.print_color_centered(24, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Begin [N]ew game");
         } else {
-            ctx.print_color_centered(24, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Begin new game");
+            ctx.print_color_centered(24, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Begin [N]ew game");
         }
 
         if save_exists {
             if selection == MainMenuSelection::LoadGame {
-                ctx.print_color_centered(25, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Load game");
+                ctx.print_color_centered(25, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[L]oad Game");
             } else {
-                ctx.print_color_centered(25, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Load game");
+                ctx.print_color_centered(25, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "[L]oad Game");
             }
         }
 
         if selection == MainMenuSelection::Quit {
-            ctx.print_color_centered(26, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Quit");
+            ctx.print_color_centered(26, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[Q]uit");
         } else {
-            ctx.print_color_centered(26, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Quit");
+            ctx.print_color_centered(26, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "[Q]uit");
         }
 
         match ctx.key {
@@ -299,6 +304,17 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
                     }
                     VirtualKeyCode::Return |
                     VirtualKeyCode::Space => return MainMenuResult::Selected{ selected: selection },
+                    // Direct choices
+                    VirtualKeyCode::N => return MainMenuResult::Selected{ selected: MainMenuSelection::NewGame },
+                    VirtualKeyCode::L => {
+                        if save_exists {
+                            return MainMenuResult::Selected{ selected: MainMenuSelection::LoadGame };
+                        } else {
+                            return MainMenuResult::NoSelection{ selected: selection };
+                        }
+                    },
+                    VirtualKeyCode::Q => return MainMenuResult::Selected{ selected: MainMenuSelection::Quit },
+                    // Default
                     _ => return MainMenuResult::NoSelection{ selected: selection }
                 }
             }

@@ -23,7 +23,7 @@ macro_rules! serialize_individually {
 pub fn save_game(ecs: &mut World) {
     // Create helper
     let mapcopy = ecs.get_mut::<super::map::Map>().unwrap().clone();
-    let savehelper = ecs.create_entity()
+    let _savehelper = ecs.create_entity()
         .with(SerializationHelper{ map: mapcopy })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
