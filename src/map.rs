@@ -180,6 +180,41 @@ impl BaseMap for Map {
     }
 }
 
+fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
+    if x < 0 || x > map.width - 1 || y < 0 || y > map.height - 1 as i32 { return false; }
+    let idx = map.xy_idx(x, y);
+    map.tiles[idx] == TileType::Wall && map.revealed_tiles[idx]
+}
+
+fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
+    let mut mask: u8 = 0;
+
+    if is_revealed_and_wall(map, x, y - 1) { mask += 1; }
+    if is_revealed_and_wall(map, x, y + 1) { mask += 2; }
+    if is_revealed_and_wall(map, x - 1, y) { mask += 4; }
+    if is_revealed_and_wall(map, x + 1, y) { mask += 8; }
+
+    match mask {
+        0 => { 9 } // Pillar because can't see neighbours
+        1 => { 186 } // Wall only to the north
+        2 => { 186 } // Wall only to the south
+        3 => { 186 } // Walls to north and south
+        4 => { 205 } // Wall only to the west
+        5 => { 188 } // Walls to north and west
+        6 => { 187 } // Wall to south and west
+        7 => { 185 } // Wall to north, south and west
+        8 => { 205 } // Wall only to east
+        9 => { 200 } // Wall to north and east
+        10 => { 201 } // Wall to east and south
+        11 => { 204 } // Wall to north, east and south
+        12 => { 205 } // Wall to east and west
+        13 => { 202 } // Wall to north, east and west
+        14 => { 203 } // Wall to east, south and west
+        15 => { 206 } // Wall on all sides
+        _ => { 35 } // We missed one?
+    }
+}
+
 pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
     let map = ecs.fetch::<Map>();
 
@@ -197,7 +232,7 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
                     fg = RGB::from_f32(0.0, 0.5, 0.5);
                 }
                 TileType::Wall => {
-                    glyph = rltk::to_cp437('#');
+                    glyph = wall_glyph(&*map, x, y);
                     fg = RGB::from_f32(0., 0.7, 0.);
                 }
                 TileType::DownStairs => {
