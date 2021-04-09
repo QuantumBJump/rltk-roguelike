@@ -2,7 +2,7 @@ use rltk::{ RGB, Rltk, Point, VirtualKeyCode };
 use specs::prelude::*;
 use super::{
     CombatStats, Player, GameLog, Name, Map, Position, State, InBackpack,
-    Viewshed, RunState,
+    Viewshed, RunState, Equipped,
 };
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
@@ -193,6 +193,52 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
     }
 }
 
+/// Shows a menu to allow the player to remove an equipped item and place it in their backpack.
+pub fn remove_item_menu(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+    let player_entity = gs.ecs.fetch::<Entity>();
+    let names = gs.ecs.read_storage::<Name>();
+    let equipped = gs.ecs.write_storage::<Equipped>();
+    let entities = gs.ecs.entities();
+
+    let inventory = (&equipped, &names).join().filter(|item| item.0.owner == *player_entity);
+    let count = inventory.count();
+
+    // Draw box
+    let mut y = (25 - (count / 2)) as i32;
+    ctx.draw_box(15, y-2, 31, (count+3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.print_color(18, y-2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Remove Which Item?");
+    ctx.print_color(18, y+count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "ESCAPE to cancel");
+
+    let mut equippable: Vec<Entity> = Vec::new();
+    let mut j = 0;
+    for (entity, _pack, name) in (&entities, &equipped, &names).join().filter(|item| item.1.owner == *player_entity ) {
+        ctx.set(17, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437('('));
+        ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97+j as rltk::FontCharType);
+        ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
+
+        ctx.print(21, y, &name.name.to_string());
+        equippable.push(entity);
+        y += 1;
+        j += 1;
+    }
+
+    match ctx.key {
+        None => (ItemMenuResult::NoResponse, None),
+        Some(key) => {
+            match key {
+                VirtualKeyCode::Escape => { (ItemMenuResult::Cancel, None) }
+                _ => {
+                    let selection = rltk::letter_to_option(key);
+                    if selection > -1 && selection < count as i32 {
+                        return (ItemMenuResult::Selected, Some(equippable[selection as usize]));
+                    }
+                    (ItemMenuResult::NoResponse, None)
+                }
+            }
+        }
+    }
+}
+
 pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32) -> (ItemMenuResult, Option<Point>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
@@ -321,4 +367,27 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
         }
     }
     MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame }
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum GameOverResult { NoSelection, QuitToMenu }
+
+pub fn game_over(ctx: &mut Rltk) -> GameOverResult {
+    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Your journey has ended!");
+    ctx.print_color_centered(16, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "One day, we'll tell you about how you did...");
+    ctx.print_color_centered(17, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "But sadly, that day is not today.");
+
+    ctx.print_color_centered(20, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Press ENTER or ESC to return to the menu");
+    match ctx.key {
+        None => GameOverResult::NoSelection,
+        Some(key) => {
+            match key {
+                VirtualKeyCode::Escape |
+                VirtualKeyCode::Return => {
+                    GameOverResult::QuitToMenu
+                },
+                _ => {GameOverResult::NoSelection}
+            }
+        }
+    }
 }
