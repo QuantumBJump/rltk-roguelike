@@ -34,6 +34,7 @@ use inventory_system::ItemRemoveSystem;
 mod saveload_system;
 pub mod random_table;
 mod particle_system;
+mod hunger_system;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -76,6 +77,9 @@ impl State {
 
         let mut item_remove = ItemRemoveSystem{};
         item_remove.run_now(&self.ecs);
+
+        let mut hunger = hunger_system::HungerSystem{};
+        hunger.run_now(&self.ecs);
 
         let mut particles = particle_system::ParticleSpawnSystem{};
         particles.run_now(&self.ecs);
@@ -429,6 +433,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<MeleePowerBonus>();
     gs.ecs.register::<DefenseBonus>();
     gs.ecs.register::<ParticleLifetime>();
+    gs.ecs.register::<HungerClock>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 

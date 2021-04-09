@@ -5,7 +5,7 @@ use super::{
     BlocksTile, Rect, map::MAPWIDTH, Item, Consumable, ProvidesHealing,
     Ranged, InflictsDamage, AreaOfEffect, Stunned, SerializeMe,
     random_table::RandomTable, Equippable, EquipmentSlot, MeleePowerBonus,
-    DefenseBonus,
+    DefenseBonus, HungerClock, HungerState,
 };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -29,6 +29,10 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             hp: 30,
             defense: 2,
             power: 5,
+        })
+        .with(HungerClock{
+            state: HungerState::WellFed,
+            duration: 20,
         })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()

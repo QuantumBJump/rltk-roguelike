@@ -34,6 +34,15 @@ pub struct Viewshed {
     pub dirty: bool
 }
 
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+pub enum HungerState { WellFed, Normal, Hungry, Starving }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct HungerClock {
+    pub state: HungerState,
+    pub duration: i32,
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Monster {}
 
