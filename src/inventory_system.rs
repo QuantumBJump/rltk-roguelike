@@ -62,7 +62,7 @@ impl<'a> System<'a> for ItemUseSystem {
             mut suffer_damage, aoe, mut stunned) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
-            let mut used_item = true;
+            let mut _used_item = true;
 
             // Targeting
             let mut targets: Vec<Entity> = Vec::new();
@@ -113,7 +113,7 @@ impl<'a> System<'a> for ItemUseSystem {
             match item_damages {
                 None => {}
                 Some(damage) => {
-                    used_item = false;
+                    _used_item = false;
                     for mob in targets.iter() {
                         SufferDamage::new_damage(&mut suffer_damage, *mob, damage.damage);
                         if entity == *player_entity {
@@ -122,7 +122,7 @@ impl<'a> System<'a> for ItemUseSystem {
                             gamelog.entries.push(format!("You use {} on {}, inflicting {} damage.", item_name.name, mob_name.name, damage.damage));
                         }
 
-                        used_item = true;
+                        _used_item = true;
                     }
                 }
             }
@@ -133,7 +133,7 @@ impl<'a> System<'a> for ItemUseSystem {
                 match causes_stun {
                     None => {}
                     Some(stunned) => {
-                        used_item = false;
+                        _used_item = false;
                         for mob in targets.iter() {
                             add_stun.push((*mob, stunned.turns));
                             if entity == *player_entity {
