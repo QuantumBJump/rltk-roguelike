@@ -100,6 +100,22 @@ pub struct Stunned {
     pub turns: i32,
 }
 
+// Equipment
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum EquipmentSlot { Melee, Shield }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Equippable {
+    pub slot: EquipmentSlot,
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct Equipped {
+    pub owner: Entity,
+    pub slot: EquipmentSlot,
+}
+
+// Saving/loading
 pub struct SerializeMe;
 
 #[derive(Component, Serialize, Deserialize, Clone)]
