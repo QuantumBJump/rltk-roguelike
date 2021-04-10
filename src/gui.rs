@@ -2,7 +2,7 @@ use rltk::{ RGB, Rltk, Point, VirtualKeyCode };
 use specs::prelude::*;
 use super::{
     CombatStats, Player, GameLog, Name, Map, Position, State, InBackpack,
-    Viewshed, RunState, Equipped, HungerClock, HungerState,
+    Viewshed, RunState, Equipped, HungerClock, HungerState, Hidden,
 };
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
@@ -52,6 +52,7 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
+    let hidden = ecs.read_storage::<Hidden>();
 
     let mouse_pos = ctx.mouse_pos();
     // Ignore if mouse is out of bounds.
@@ -59,7 +60,7 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
 
     let mut tooltip: Vec<String> = Vec::new();
     // Populate tooltip
-    for (name, position) in (&names, &positions).join() {
+    for (name, position, _hidden) in (&names, &positions, !&hidden).join() {
         // Get the indices of all named entities
         let idx = map.xy_idx(position.x, position.y);
         if position.x == mouse_pos.0 && position.y == mouse_pos.1 && map.visible_tiles[idx] {

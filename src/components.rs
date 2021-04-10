@@ -5,6 +5,7 @@ use serde::{Serialize, Deserialize};
 use specs::saveload::{Marker, ConvertSaveload};
 use specs::error::NoError;
 
+// General
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
     pub x: i32,
@@ -24,15 +25,21 @@ pub struct ParticleLifetime {
     pub lifetime_ms: f32,
 }
 
-#[derive(Component, Serialize, Deserialize, Clone, Debug)]
-pub struct Player {}
-
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Viewshed {
     pub visible_tiles: Vec<rltk::Point>,
     pub range: i32,
     pub dirty: bool
 }
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct Name {
+    pub name: String
+}
+
+// Actors
+#[derive(Component, Serialize, Deserialize, Clone, Debug)]
+pub struct Player {}
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
 pub enum HungerState { WellFed, Normal, Hungry, Starving }
@@ -45,11 +52,6 @@ pub struct HungerClock {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Monster {}
-
-#[derive(Component, Debug, ConvertSaveload, Clone)]
-pub struct Name {
-    pub name: String
-}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
@@ -77,6 +79,11 @@ impl SufferDamage {
         }
     }
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntityMoved {}
+
+// Items
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Item {}
@@ -181,3 +188,14 @@ pub struct WantsToUseItem {
 pub struct WantsToRemoveItem {
     pub item: Entity,
 }
+
+// Hazards
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Hidden {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntryTrigger{}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SingleActivation {}
