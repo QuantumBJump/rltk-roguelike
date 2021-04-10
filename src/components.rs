@@ -57,6 +57,13 @@ pub struct Monster {}
 pub struct BlocksTile {}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct RemembersPlayer {
+    // How long the enemy will continue to pursue the player after losing sight.
+    pub max_memory: i32,
+    pub memory: i32,
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct CombatStats {
     pub max_hp: i32,
     pub hp: i32,
