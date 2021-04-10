@@ -302,27 +302,44 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
     let save_exists = super::saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
 
-    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Rustlike tutorial");
+    ctx.draw_box_double(24, 18, 31, 10, RGB::named(rltk::WHEAT), RGB::named(rltk::BLACK));
+    ctx.print_color_centered(20, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Rustlike tutorial");
+    ctx.print_color_centered(21, RGB::named(rltk::CYAN), RGB::named(rltk::BLACK), "by Quinn Stevens");
 
+    let mut y = 24;
     if let RunState::MainMenu{ menu_selection: selection } = *runstate {
         if selection == MainMenuSelection::NewGame {
-            ctx.print_color_centered(24, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Begin [N]ew game");
+            ctx.print_color(32, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Begin [");
+            ctx.print_color(39, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "N");
+            ctx.print_color(40, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "]ew Game");
         } else {
-            ctx.print_color_centered(24, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Begin [N]ew game");
+            ctx.print_color(32, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Begin [");
+            ctx.print_color(39, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "N");
+            ctx.print_color(40, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "]ew Game");
         }
+        y += 1;
 
         if save_exists {
             if selection == MainMenuSelection::LoadGame {
-                ctx.print_color_centered(25, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[L]oad Game");
+                ctx.print_color(35, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[");
+                ctx.print_color(36, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "L");
+                ctx.print_color(37, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "]oad Game");
             } else {
-                ctx.print_color_centered(25, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "[L]oad Game");
+                ctx.print_color(35, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "[");
+                ctx.print_color(36, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "L");
+                ctx.print_color(37, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "]oad Game");
             }
+            y += 1;
         }
 
         if selection == MainMenuSelection::Quit {
-            ctx.print_color_centered(26, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[Q]uit");
+            ctx.print_color(37, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[");
+            ctx.print_color(38, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Q");
+            ctx.print_color(39, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "]uit");
         } else {
-            ctx.print_color_centered(26, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "[Q]uit");
+            ctx.print_color(37, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "[");
+            ctx.print_color(38, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Q");
+            ctx.print_color(39, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "]uit");
         }
 
         match ctx.key {
