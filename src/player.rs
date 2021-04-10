@@ -2,7 +2,7 @@ use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use super::{
     Position, Player, State, Map, Viewshed, RunState, CombatStats, WantsToMelee, Item, gamelog::GameLog,
-    WantsToPickupItem, TileType, Monster,
+    WantsToPickupItem, TileType, Monster, HungerClock, HungerState, EntityMoved,
 };
 use std::cmp::{min, max};
 
@@ -14,6 +14,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let combat_stats = ecs.read_storage::<CombatStats>();
     let map = ecs.fetch::<Map>();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
+    let mut entity_moved = ecs.write_storage::<EntityMoved>();
 
     for (entity, _player, pos, viewshed) in (&entities, &players, &mut positions, &mut viewsheds).join() {
         // Don't let player move out of bounds.
@@ -36,6 +37,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             let mut ppos = ecs.write_resource::<Point>();
             ppos.x = pos.x;
             ppos.y = pos.y;
+            entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
         }
     }
 }
@@ -95,6 +97,16 @@ fn skip_turn(ecs: &mut World) -> RunState {
                 None => {}
                 Some(_) => {can_heal = false;}
             }
+        }
+    }
+
+    let hunger_clocks = ecs.read_storage::<HungerClock>();
+    let hc = hunger_clocks.get(*player_entity);
+    if let Some(hc) = hc {
+        match hc.state {
+            HungerState::Hungry => can_heal = false,
+            HungerState::Starving => can_heal = false,
+            _ => {}
         }
     }
 

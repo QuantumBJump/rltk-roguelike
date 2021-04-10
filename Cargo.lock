@@ -140,9 +140,9 @@ dependencies = [
 
 [[package]]
 name = "bracket-pathfinding"
-version = "0.8.4"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b713222141585b5e5cc6f0be1a0a473e1e339aa1300af91929ce6b1b2ed529c"
+checksum = "e3ae52777397a1533e77fd7414124808285b24f6a1845908bc30dbf6f1e34d2f"
 dependencies = [
  "bracket-algorithm-traits",
  "bracket-geometry",
@@ -1483,7 +1483,7 @@ dependencies = [
 
 [[package]]
 name = "rustlike"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bracket-pathfinding",
  "rltk",

@@ -33,6 +33,9 @@ use inventory_system::ItemDropSystem;
 use inventory_system::ItemRemoveSystem;
 mod saveload_system;
 pub mod random_table;
+mod particle_system;
+mod hunger_system;
+mod trigger_system;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -42,6 +45,7 @@ pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventor
     NextLevel,
     ShowRemoveItem,
     GameOver,
+    MagicMapReveal{ row: i32 },
 }
 
 pub struct State{
@@ -53,8 +57,14 @@ impl State {
         let mut vis = VisibilitySystem{};
         vis.run_now(&self.ecs);
 
+        let mut pickup = ItemCollectionSystem{};
+        pickup.run_now(&self.ecs);
+
         let mut mob = MonsterAI{};
         mob.run_now(&self.ecs);
+
+        let mut triggers = trigger_system::TriggerSystem{};
+        triggers.run_now(&self.ecs);
 
         let mut mapindex = MapIndexingSystem{};
         mapindex.run_now(&self.ecs);
@@ -64,9 +74,6 @@ impl State {
         let mut damage = DamageSystem{};
         damage.run_now(&self.ecs);
 
-        let mut pickup = ItemCollectionSystem{};
-        pickup.run_now(&self.ecs);
-
         let mut potions = ItemUseSystem{};
         potions.run_now(&self.ecs);
 
@@ -75,6 +82,12 @@ impl State {
 
         let mut item_remove = ItemRemoveSystem{};
         item_remove.run_now(&self.ecs);
+
+        let mut hunger = hunger_system::HungerSystem{};
+        hunger.run_now(&self.ecs);
+
+        let mut particles = particle_system::ParticleSpawnSystem{};
+        particles.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -89,6 +102,7 @@ impl GameState for State {
         }
 
         ctx.cls(); // Clear the screen
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
 
         match newrunstate {
             // Only draw the map/entities/gui if we're not in the main menu
@@ -100,11 +114,12 @@ impl GameState for State {
                 {
                     let positions = self.ecs.read_storage::<Position>();
                     let renderables = self.ecs.read_storage::<Renderable>();
+                    let hidden = self.ecs.read_storage::<Hidden>();
                     let map = self.ecs.fetch::<Map>();
 
-                    let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
+                    let mut data = (&positions, &renderables, !&hidden).join().collect::<Vec<_>>();
                     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                    for (pos, render) in data.iter() {
+                    for (pos, render, _hidden) in data.iter() {
                         let idx = map.xy_idx(pos.x, pos.y);
                         if map.visible_tiles[idx] {
                             ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
@@ -151,7 +166,10 @@ impl GameState for State {
             RunState::PlayerTurn => {
                 self.run_systems();
                 self.ecs.maintain();
-                newrunstate = RunState::MonsterTurn;
+                match *self.ecs.fetch::<RunState>() {
+                    RunState::MagicMapReveal{ .. } => newrunstate = RunState::MagicMapReveal{ row: 0 },
+                    _ => newrunstate = RunState::MonsterTurn
+                }
             }
             RunState::MonsterTurn => {
                 self.run_systems();
@@ -231,6 +249,18 @@ impl GameState for State {
                         self.game_over_cleanup();
                         newrunstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
                     }
+                }
+            }
+            RunState::MagicMapReveal{row} => {
+                let mut map = self.ecs.fetch_mut::<Map>();
+                for x in 0..MAPWIDTH {
+                    let idx = map.xy_idx(x as i32, row);
+                    map.revealed_tiles[idx] = true;
+                }
+                if row as usize == MAPHEIGHT-1 {
+                    newrunstate = RunState::MonsterTurn;
+                } else {
+                    newrunstate = RunState::MagicMapReveal{row: row+1 };
                 }
             }
         }
@@ -423,6 +453,15 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Equipped>();
     gs.ecs.register::<MeleePowerBonus>();
     gs.ecs.register::<DefenseBonus>();
+    gs.ecs.register::<ParticleLifetime>();
+    gs.ecs.register::<HungerClock>();
+    gs.ecs.register::<ProvidesFood>();
+    gs.ecs.register::<MagicMapper>();
+    gs.ecs.register::<Hidden>();
+    gs.ecs.register::<EntryTrigger>();
+    gs.ecs.register::<EntityMoved>();
+    gs.ecs.register::<SingleActivation>();
+    gs.ecs.register::<RemembersPlayer>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
@@ -447,6 +486,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(gamelog::GameLog{ entries: vec!["Welcome to Rustlike!".to_string()]});
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
+    gs.ecs.insert(particle_system::ParticleBuilder::new());
 
     rltk::main_loop(context, gs)
 }

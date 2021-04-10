@@ -5,6 +5,7 @@ use serde::{Serialize, Deserialize};
 use specs::saveload::{Marker, ConvertSaveload};
 use specs::error::NoError;
 
+// General
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
     pub x: i32,
@@ -19,8 +20,10 @@ pub struct Renderable {
     pub render_order: i32,
 }
 
-#[derive(Component, Serialize, Deserialize, Clone, Debug)]
-pub struct Player {}
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct ParticleLifetime {
+    pub lifetime_ms: f32,
+}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Viewshed {
@@ -29,16 +32,36 @@ pub struct Viewshed {
     pub dirty: bool
 }
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Monster {}
-
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct Name {
     pub name: String
 }
 
+// Actors
+#[derive(Component, Serialize, Deserialize, Clone, Debug)]
+pub struct Player {}
+
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+pub enum HungerState { WellFed, Normal, Hungry, Starving }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct HungerClock {
+    pub state: HungerState,
+    pub duration: i32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Monster {}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct RemembersPlayer {
+    // How long the enemy will continue to pursue the player after losing sight.
+    pub max_memory: i32,
+    pub memory: i32,
+}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct CombatStats {
@@ -65,12 +88,20 @@ impl SufferDamage {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntityMoved {}
+
+// Items
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Item {}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct ProvidesHealing {
     pub heal_amount: i32
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ProvidesFood {}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InBackpack {
@@ -99,6 +130,9 @@ pub struct AreaOfEffect {
 pub struct Stunned {
     pub turns: i32,
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MagicMapper {}
 
 // Equipment
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
@@ -161,3 +195,14 @@ pub struct WantsToUseItem {
 pub struct WantsToRemoveItem {
     pub item: Entity,
 }
+
+// Hazards
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Hidden {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntryTrigger{}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SingleActivation {}
