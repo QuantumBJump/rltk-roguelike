@@ -117,6 +117,9 @@ pub struct Stunned {
     pub turns: i32,
 }
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MagicMapper {}
+
 // Equipment
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum EquipmentSlot { Melee, Shield }

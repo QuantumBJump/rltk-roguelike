@@ -5,7 +5,7 @@ use super::{
     Consumable, InflictsDamage, Map, SufferDamage, AreaOfEffect,
     Stunned, Equippable, Equipped, WantsToRemoveItem,
     particle_system::ParticleBuilder, ProvidesFood, HungerClock,
-    HungerState,
+    HungerState, MagicMapper, RunState,
 };
 
 pub struct ItemCollectionSystem {}
@@ -62,6 +62,8 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Position>,
         ReadStorage<'a, ProvidesFood>,
         WriteStorage<'a, HungerClock>,
+        ReadStorage<'a, MagicMapper>,
+        WriteExpect<'a, RunState>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -70,7 +72,7 @@ impl<'a> System<'a> for ItemUseSystem {
             consumables, healing, inflict_damage, mut combat_stats,
             mut suffer_damage, aoe, mut stunned, equippable, mut equipped,
             mut backpack, mut particle_builder, positions, provides_food,
-            mut hungerclocks,
+            mut hungerclocks, magic_mapper, mut runstate,
         ) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
@@ -172,6 +174,16 @@ impl<'a> System<'a> for ItemUseSystem {
                         hc.duration = 20;
                         gamelog.entries.push(format!("You eat the {}", names.get(useitem.item).unwrap().name));
                     }
+                }
+            }
+            
+            let is_mapper = magic_mapper.get(useitem.item);
+            match is_mapper {
+                None => {}
+                Some(_) => {
+                    _used_item = true;
+                    gamelog.entries.push("You see everything!".to_string());
+                    *runstate = RunState::MagicMapReveal{ row: 0 };
                 }
             }
 
