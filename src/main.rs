@@ -327,7 +327,7 @@ impl State {
         }
 
         // Build a new map and place the player
-        let worldmap;
+        let mut worldmap;
         let current_depth;
         let player_start;
         {
@@ -340,9 +340,7 @@ impl State {
         }
 
         // Spawn bad guys
-        for room in worldmap.rooms.iter().skip(1) {
-            spawner::spawn_room(&mut self.ecs, room, current_depth + 1);
-        }
+        map_builders::spawn(&mut worldmap, &mut self.ecs, current_depth + 1);
 
         // Place the player and update resources.
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -384,7 +382,7 @@ impl State {
         }
 
         // Build a new map and place the player
-        let worldmap;
+        let mut worldmap;
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
@@ -395,9 +393,7 @@ impl State {
         }
 
         // Spawn bad guys
-        for room in worldmap.rooms.iter().skip(1) {
-            spawner::spawn_room(&mut self.ecs, room, 1);
-        }
+        map_builders::spawn(&mut worldmap, &mut self.ecs, 1);
 
         // Place the player and update resources.
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -474,7 +470,7 @@ fn main() -> rltk::BError {
 
     // Add the map
     let (newmap, start) = map_builders::build_random_map(1);
-    let map: Map = newmap;
+    let mut map: Map = newmap;
     let (player_x, player_y) = (start.x, start.y);
 
     // Create player entity
@@ -484,9 +480,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
 
     // Fill each room (except the first) with monsters.
-    for room in map.rooms.iter().skip(1) {
-        spawner::spawn_room(&mut gs.ecs, room, 1);
-    }
+    map_builders::spawn(&mut map, &mut gs.ecs, 1);
 
     gs.ecs.insert(map);
     gs.ecs.insert(player_entity);

@@ -1,6 +1,6 @@
 use super::{
     MapBuilder, Rect, apply_room_to_map, apply_horizontal_tunnel,
-    apply_vertical_tunnel, TileType, Position
+    apply_vertical_tunnel, TileType, Position, World, spawner,
 };
 use super::Map;
 use rltk::RandomNumberGenerator;
@@ -12,6 +12,12 @@ impl MapBuilder for SimpleMapBuilder {
         let mut map = Map::new(new_depth);
         let playerpos = SimpleMapBuilder::rooms_and_corridors(&mut map);
         (map, playerpos)
+    }
+
+    fn spawn(map: &Map, ecs: &mut World, depth: i32) {
+        for room in map.rooms.iter().skip(1) {
+            spawner::spawn_room(ecs, room, depth)
+        }
     }
 }
 
