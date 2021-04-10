@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use super::{
     Viewshed, Monster, RunState, WantsToMelee, Map, Position, Stunned,
-    particle_system::ParticleBuilder,
+    particle_system::ParticleBuilder, EntityMoved,
 };
 use rltk::{Point};
 
@@ -19,19 +19,21 @@ impl <'a> System<'a> for MonsterAI {
                         WriteStorage<'a, WantsToMelee>,
                         WriteStorage<'a, Stunned>,
                         WriteExpect<'a, ParticleBuilder>,
+                        WriteStorage<'a, EntityMoved>,
                     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (
             mut map, player_pos, player_entity, runstate, entities,
             mut viewshed, monster, mut position, mut wants_to_melee,
-            mut stunned, mut particle_builder,
+            mut stunned, mut particle_builder, mut entity_moved,
         ) = data;
 
         if *runstate != RunState::MonsterTurn { return; } // Only move on monster's turn.
 
         for (entity, mut viewshed, _monster, mut pos) in (&entities, &mut viewshed, &monster, &mut position).join() {
             let mut can_act = true;
+
             let is_stunned = stunned.get_mut(entity);
             if let Some(i_am_stunned) = is_stunned {
                 i_am_stunned.turns -= 1;
@@ -66,6 +68,7 @@ impl <'a> System<'a> for MonsterAI {
                         map.blocked[idx] = false;
                         pos.x = path.steps[1] as i32 % map.width;
                         pos.y = path.steps[1] as i32 / map.width;
+                        entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
                         idx = map.xy_idx(pos.x, pos.y);
                         map.blocked[idx] = true;
                         viewshed.dirty = true;
