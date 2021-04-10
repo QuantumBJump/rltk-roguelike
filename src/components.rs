@@ -196,3 +196,6 @@ pub struct Hidden {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct EntryTrigger{}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SingleActivation {}

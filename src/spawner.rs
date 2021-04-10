@@ -6,7 +6,7 @@ use super::{
     Ranged, InflictsDamage, AreaOfEffect, Stunned, SerializeMe,
     random_table::RandomTable, Equippable, EquipmentSlot, MeleePowerBonus,
     DefenseBonus, HungerClock, HungerState, ProvidesFood, MagicMapper, Hidden,
-    EntryTrigger,
+    EntryTrigger, SingleActivation,
 };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -326,6 +326,7 @@ fn bear_trap(ecs: &mut World, x: i32, y: i32) {
         .with(Hidden{})
         .with(EntryTrigger{})
         .with(InflictsDamage{ damage: 6 })
+        .with(SingleActivation{})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
