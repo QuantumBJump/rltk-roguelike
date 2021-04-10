@@ -36,6 +36,7 @@ pub mod random_table;
 mod particle_system;
 mod hunger_system;
 mod trigger_system;
+pub mod map_builders;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -331,7 +332,7 @@ impl State {
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             current_depth = worldmap_resource.depth;
-            *worldmap_resource = Map::new_map_rooms_and_corridors(current_depth + 1);
+            *worldmap_resource = map_builders::build_random_map(current_depth + 1);
             worldmap = worldmap_resource.clone();
         }
 
@@ -383,7 +384,7 @@ impl State {
         let worldmap;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            *worldmap_resource = Map::new_map_rooms_and_corridors(1);
+            *worldmap_resource = map_builders::build_random_map(1);
             worldmap = worldmap_resource.clone();
         }
 
@@ -466,7 +467,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     // Add the map
-    let map: Map = Map::new_map_rooms_and_corridors(1);
+    let map: Map = map_builders::build_random_map(1);
     let (player_x, player_y) = map.rooms[0].center();
 
     // Create player entity
