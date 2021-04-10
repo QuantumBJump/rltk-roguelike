@@ -1,6 +1,7 @@
 use specs::prelude::*;
 use super::{
     EntityMoved, Position, EntryTrigger, Hidden, Map, Name, gamelog::GameLog,
+    InflictsDamage, particle_system::ParticleBuilder, SufferDamage,
 };
 
 pub struct TriggerSystem{}
@@ -15,12 +16,16 @@ impl<'a> System<'a> for TriggerSystem {
         ReadStorage<'a, Name>,
         Entities<'a>,
         WriteExpect<'a, GameLog>,
+        ReadStorage<'a, InflictsDamage>,
+        WriteExpect<'a, ParticleBuilder>,
+        WriteStorage<'a, SufferDamage>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (
             map, mut entity_moved, positions, entry_triggers, mut hidden, names,
-            entities, mut gamelog,
+            entities, mut gamelog, inflicts_damage, mut particle_builder,
+            mut inflict_damage,
         ) = data;
 
         // For each entity which moved, look at its final position
@@ -40,6 +45,14 @@ impl<'a> System<'a> for TriggerSystem {
                             }
 
                             hidden.remove(*entity_id); // The trap is no longer hidden.
+
+                            // If the trap is damaging, inflict damage
+                            let damages = inflicts_damage.get(*entity_id);
+                            if let Some(damages) = damages {
+                                particle_builder.request(pos.x, pos.y, rltk::RGB::named(rltk::ORANGE), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('‼'), 200.0);
+                                SufferDamage::new_damage(&mut inflict_damage, entity, damages.damage);
+                            }
+
                         }
                     }    
                 }
