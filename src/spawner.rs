@@ -111,6 +111,8 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("Bear Trap", 2 + (map_depth / 2))
 }
 
+// Monsters
+
 fn orc(ecs: &mut World, x: i32, y: i32) { monster(ecs, x, y, rltk::to_cp437('o'), "Orc"); }
 fn goblin(ecs: &mut World, x: i32, y: i32) { monster(ecs, x, y, rltk::to_cp437('g'), "Goblin"); }
 
@@ -129,7 +131,7 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
         .with(BlocksTile {})
         .with(RemembersPlayer{
             max_memory: 4,
-            memory: 4,
+            memory: 0,
         })
         .with(CombatStats{
             max_hp: 16,
@@ -140,6 +142,8 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
+
+// Items
 
 fn health_potion(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
