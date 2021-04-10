@@ -6,7 +6,7 @@ use super::{
     Ranged, InflictsDamage, AreaOfEffect, Stunned, SerializeMe,
     random_table::RandomTable, Equippable, EquipmentSlot, MeleePowerBonus,
     DefenseBonus, HungerClock, HungerState, ProvidesFood, MagicMapper, Hidden,
-    EntryTrigger, SingleActivation,
+    EntryTrigger, SingleActivation, RemembersPlayer,
 };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -127,6 +127,10 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
         .with(Monster{})
         .with(Name{ name: name.to_string() })
         .with(BlocksTile {})
+        .with(RemembersPlayer{
+            max_memory: 4,
+            memory: 4,
+        })
         .with(CombatStats{
             max_hp: 16,
             hp: 16,

@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use super::{
     Viewshed, Monster, RunState, WantsToMelee, Map, Position, Stunned,
-    particle_system::ParticleBuilder, EntityMoved,
+    particle_system::ParticleBuilder, EntityMoved, RemembersPlayer,
 };
 use rltk::{Point};
 
@@ -20,6 +20,7 @@ impl <'a> System<'a> for MonsterAI {
                         WriteStorage<'a, Stunned>,
                         WriteExpect<'a, ParticleBuilder>,
                         WriteStorage<'a, EntityMoved>,
+                        WriteStorage<'a, RemembersPlayer>,
                     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -27,6 +28,7 @@ impl <'a> System<'a> for MonsterAI {
             mut map, player_pos, player_entity, runstate, entities,
             mut viewshed, monster, mut position, mut wants_to_melee,
             mut stunned, mut particle_builder, mut entity_moved,
+            mut remembers_player,
         ) = data;
 
         if *runstate != RunState::MonsterTurn { return; } // Only move on monster's turn.
@@ -58,6 +60,12 @@ impl <'a> System<'a> for MonsterAI {
                     wants_to_melee.insert(entity, WantsToMelee{ target: *player_entity}).expect("Unable to insert attack.");
                 }
                 else if viewshed.visible_tiles.contains(&*player_pos) {
+                    // Reset the enemy's memory of the player.
+                    let remembers = remembers_player.get_mut(entity);
+                    if let Some(remembers) = remembers {
+                        remembers.memory = i32::max(remembers.max_memory, remembers.memory);
+                    }
+
                     let path = rltk::a_star_search(
                         map.xy_idx(pos.x, pos.y),
                         map.xy_idx(player_pos.x, player_pos.y),
@@ -72,6 +80,27 @@ impl <'a> System<'a> for MonsterAI {
                         idx = map.xy_idx(pos.x, pos.y);
                         map.blocked[idx] = true;
                         viewshed.dirty = true;
+                    }
+                } else {
+                    let remembers = remembers_player.get_mut(entity);
+                    if let Some(remembers) = remembers {
+                        if remembers.memory > 0 {
+                            let path = rltk::a_star_search(
+                                map.xy_idx(pos.x, pos.y),
+                                map.xy_idx(player_pos.x, player_pos.y),
+                                &mut *map,
+                            );
+                            if path.success && path.steps.len() > 1 {
+                                let mut idx = map.xy_idx(pos.x, pos.y);
+                                map.blocked[idx] = false;
+                                pos.x = path.steps[1] as i32 % map.width;
+                                pos.y = path.steps[1] as i32 / map.width;
+                                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
+                                idx = map.xy_idx(pos.x, pos.y);
+                                map.blocked[idx] = true;
+                                viewshed.dirty = true;
+                            }
+                        }
                     }
                 }
 
