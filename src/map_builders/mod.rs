@@ -1,8 +1,10 @@
 use super::{
-    Map, Rect, TileType, Position, World, spawner, SHOW_MAPGEN_VISUALISER
+    Map, Rect, TileType, Position, World, spawner, SHOW_MAPGEN_VISUALISER,
 };
 mod simple_map;
 use simple_map::SimpleMapBuilder;
+mod bsp_dungeon;
+use bsp_dungeon::BspDungeonBuilder;
 mod common;
 use common::*;
 
@@ -13,12 +15,17 @@ pub trait MapBuilder {
     fn take_snapshot(&mut self);
 
     // Getters
-    fn get_map(&mut self) -> Map;
-    fn get_starting_position(&mut self) -> Position;
+    fn get_map(&self) -> Map;
+    fn get_starting_position(&self) -> Position;
     fn get_snapshot_history(&self) -> Vec<Map>;
 }
 
-pub fn random_builder(current_depth: i32) -> Box<dyn MapBuilder> {
+pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     // Note that until we have a second map type, this isn't even remotely random
-    Box::new(SimpleMapBuilder::new(current_depth))
+    let mut rng = rltk::RandomNumberGenerator::new();
+    let builder = rng.roll_dice(1, 2);
+    match builder {
+        1 => Box::new(BspDungeonBuilder::new(new_depth)),
+        _ => Box::new(SimpleMapBuilder::new(new_depth))
+    }
 }
