@@ -4,15 +4,14 @@ use simple_map::SimpleMapBuilder;
 mod common;
 use common::*;
 
-trait MapBuilder {
-    fn build(new_depth: i32) -> (Map, Position);
-    fn spawn(map: &Map, ecs: &mut World, depth: i32);
+pub trait MapBuilder {
+    fn build_map(&mut self);
+    fn spawn_entities(&mut self, ecs: &mut World);
+    fn get_map(&mut self) -> Map;
+    fn get_starting_position(&mut self) -> Position;
 }
 
-pub fn build_random_map(new_depth: i32) -> (Map, Position) {
-    SimpleMapBuilder::build(new_depth)
-}
-
-pub fn spawn(map: &mut Map, ecs: &mut World, depth: i32) {
-    SimpleMapBuilder::spawn(map, ecs, depth);
+pub fn random_builder(current_depth: i32) -> Box<dyn MapBuilder> {
+    // Note that until we have a second map type, this isn't even remotely random
+    Box::new(SimpleMapBuilder::new(current_depth))
 }

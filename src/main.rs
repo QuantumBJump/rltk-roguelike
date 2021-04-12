@@ -327,20 +327,20 @@ impl State {
         }
 
         // Build a new map and place the player
-        let mut worldmap;
+        let mut builder;
         let current_depth;
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             current_depth = worldmap_resource.depth;
-            let (newmap, start) = map_builders::build_random_map(current_depth +1);
-            *worldmap_resource = newmap;
-            player_start = start;
-            worldmap = worldmap_resource.clone();
+            builder = map_builders::random_builder(current_depth + 1);
+            builder.build_map();
+            *worldmap_resource = builder.get_map();
+            player_start = builder.get_starting_position();
         }
 
         // Spawn bad guys
-        map_builders::spawn(&mut worldmap, &mut self.ecs, current_depth + 1);
+        builder.spawn_entities(&mut self.ecs);
 
         // Place the player and update resources.
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -382,18 +382,17 @@ impl State {
         }
 
         // Build a new map and place the player
-        let mut worldmap;
+        let mut builder = map_builders::random_builder(1);
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            let (newmap, start) = map_builders::build_random_map(1);
-            *worldmap_resource = newmap;
-            player_start = start;
-            worldmap = worldmap_resource.clone();
+            builder.build_map();
+            *worldmap_resource = builder.get_map();
+            player_start = builder.get_starting_position();
         }
 
         // Spawn bad guys
-        map_builders::spawn(&mut worldmap, &mut self.ecs, 1);
+        builder.spawn_entities(&mut self.ecs);
 
         // Place the player and update resources.
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -469,8 +468,10 @@ fn main() -> rltk::BError {
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     // Add the map
-    let (newmap, start) = map_builders::build_random_map(1);
-    let mut map: Map = newmap;
+    let mut builder = map_builders::random_builder(1);
+    builder.build_map();
+    let map: Map = builder.get_map();
+    let start = builder.get_starting_position();
     let (player_x, player_y) = (start.x, start.y);
 
     // Create player entity
@@ -480,14 +481,13 @@ fn main() -> rltk::BError {
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
 
     // Fill each room (except the first) with monsters.
-    map_builders::spawn(&mut map, &mut gs.ecs, 1);
+    builder.spawn_entities(&mut gs.ecs);
 
     gs.ecs.insert(map);
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_x, player_y));
     gs.ecs.insert(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(gamelog::GameLog{ entries: vec!["Welcome to Rustlike!".to_string()]});
-    gs.ecs.insert(rltk::RandomNumberGenerator::new());
     gs.ecs.insert(particle_system::ParticleBuilder::new());
 
     rltk::main_loop(context, gs)
