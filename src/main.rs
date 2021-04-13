@@ -51,6 +51,7 @@ pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventor
     GameOver,
     MagicMapReveal{ row: i32 },
     MapGeneration,
+    Wait,
 }
 
 pub struct State{
@@ -157,12 +158,22 @@ impl GameState for State {
                         self.mapgen_timer = 0.0;
                         self.mapgen_index += 1;
                         if self.mapgen_index >= self.mapgen_history.len() {
-                            newrunstate = self.mapgen_next_state.unwrap();
+                            newrunstate = RunState::Wait;
                         }
                     }
 
                 } else {
                     newrunstate = self.mapgen_next_state.unwrap();
+                }
+            }
+            RunState::Wait => {
+                ctx.cls();
+                draw_map(&self.mapgen_history[self.mapgen_index-1], ctx);
+                match ctx.key {
+                    None => {}
+                    Some(_) => {
+                        newrunstate = self.mapgen_next_state.unwrap();
+                    }
                 }
             }
             RunState::MainMenu{..} => {
