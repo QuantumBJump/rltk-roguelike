@@ -4,6 +4,7 @@ use super::{
 };
 use rltk::RandomNumberGenerator;
 use rltk::DijkstraMap;
+use std::collections::HashMap;
 use specs::prelude::*;
 
 pub struct CellularAutomataBuilder {
@@ -11,6 +12,7 @@ pub struct CellularAutomataBuilder {
     starting_position: Position,
     depth: i32,
     history: Vec<Map>,
+    noise_areas: HashMap<i32, Vec<usize>>,
 }
 
 impl MapBuilder for CellularAutomataBuilder {
@@ -31,7 +33,9 @@ impl MapBuilder for CellularAutomataBuilder {
     }
 
     fn spawn_entities(&mut self, ecs: &mut World) {
-        // TODO: implement
+        for area in self.noise_areas.iter() {
+            spawner::spawn_region(ecs, area.1, self.depth);
+        }
     }
 
     fn take_snapshot(&mut self) {
@@ -52,6 +56,7 @@ impl CellularAutomataBuilder {
             starting_position: Position{ x: 0, y: 0 },
             depth: new_depth,
             history: Vec::new(),
+            noise_areas: HashMap::new(),
         }
     }
 
@@ -129,7 +134,35 @@ impl CellularAutomataBuilder {
         }
         self.take_snapshot();
 
+        // Place downstairs as far as possible from player start.
         self.map.tiles[exit_tile.0] = TileType::DownStairs;
         self.take_snapshot();
+
+        // Build a noise map for spawning entities later
+        let mut noise = rltk::FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
+        noise.set_noise_type(rltk::NoiseType::Cellular); // We want Cellular/Voronoi noise
+        noise.set_frequency(0.08); // This can be played around with
+        noise.set_cellular_distance_function(rltk::CellularDistanceFunction::Manhattan); //Manhattan tends to favour elongated region shapes.
+
+        for y in 1 .. self.map.height-1 {
+            for x in 1 .. self.map.width-1 {
+                // Iterate through each tile in the map.
+                let idx = self.map.xy_idx(x, y);
+                // Only calculate a tile's value if it's floor
+                if self.map.tiles[idx] == TileType::Floor {
+                    // Get the noise value of the cell as an integer
+                    let cell_value_f = noise.get_noise(x as f32, y as f32) * 10240.0; // Multiply by 10240 because default results are too small.
+                    let cell_value = cell_value_f as i32; // This number acts as the area the cell belongs to.
+
+                    if self.noise_areas.contains_key(&cell_value) {
+                        // If the resultant area already exists, add the tile to that area.
+                        self.noise_areas.get_mut(&cell_value).unwrap().push(idx);
+                    } else {
+                        // If it doesn't exist yet, create it.
+                        self.noise_areas.insert(cell_value, vec![idx]);
+                    }
+                }
+            }
+        }
     }
 }

@@ -59,7 +59,7 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
     spawn_region(ecs, &possible_targets, map_depth);
 }
 
-fn spawn_region(ecs: &mut World, area: &[usize], map_depth: i32) {
+pub fn spawn_region(ecs: &mut World, area: &[usize], map_depth: i32) {
     let spawn_table = room_table(map_depth);
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
