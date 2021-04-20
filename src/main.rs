@@ -11,6 +11,7 @@ mod player;
 pub use player::*;
 mod rect;
 pub use rect::Rect;
+mod rex_assets;
 
 mod visibility_system;
 use visibility_system::VisibilitySystem;
@@ -511,6 +512,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::MapGeneration{} );
     gs.ecs.insert(gamelog::GameLog{ entries: vec!["Welcome to Rustlike!".to_string()]});
     gs.ecs.insert(particle_system::ParticleBuilder::new());
+    gs.ecs.insert(rex_assets::RexAssets::new());
 
     gs.generate_world_map(1);
 

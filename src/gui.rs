@@ -3,6 +3,7 @@ use specs::prelude::*;
 use super::{
     CombatStats, Player, GameLog, Name, Map, Position, State, InBackpack,
     Viewshed, RunState, Equipped, HungerClock, HungerState, Hidden,
+    rex_assets::RexAssets,
 };
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
@@ -302,6 +303,9 @@ pub enum MainMenuResult {
 pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
     let save_exists = super::saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
+
+    let assets = gs.ecs.fetch::<RexAssets>();
+    ctx.render_xp_sprite(&assets.menu, 0, 0);
 
     ctx.draw_box_double(24, 18, 31, 10, RGB::named(rltk::WHEAT), RGB::named(rltk::BLACK));
     ctx.print_color_centered(20, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Rustlike tutorial");
