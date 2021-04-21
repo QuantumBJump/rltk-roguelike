@@ -84,8 +84,25 @@ impl DrunkardsWalkBuilder {
 
         while floor_tile_count < desired_floor_tiles {
             let mut did_something = false;
-            let mut drunk_x = self.starting_position.x;
-            let mut drunk_y = self.starting_position.y;
+            let mut drunk_x;
+            let mut drunk_y;
+            match self.settings.spawn_mode {
+                DrunkSpawnMode::StartingPoint => {
+                    drunk_x = self.starting_position.x;
+                    drunk_y = self.starting_position.y;
+                }
+                DrunkSpawnMode::Random => {
+                    if digger_count == 0 {
+                        drunk_x = self.starting_position.x;
+                        drunk_y = self.starting_position.y;
+                    } else {
+                        // Spawn drunkard at a random position on the map.
+                        // Will not spawn drunkard within 2 tiles of the edge.
+                        drunk_x = rng.roll_dice(1, self.map.width - 3) + 1;
+                        drunk_y = rng.roll_dice(1, self.map.height - 3) + 1;
+                    }
+                }
+            }
             let mut drunk_life = 400;
 
             while drunk_life > 0 {
