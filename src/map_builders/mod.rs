@@ -10,7 +10,7 @@ use bsp_interior::BspInteriorBuilder;
 mod cellular_automata;
 use cellular_automata::CellularAutomataBuilder;
 mod drunkard;
-use drunkard::DrunkardsWalkBuilder;
+use drunkard::*;
 mod common;
 use common::*;
 
@@ -37,5 +37,5 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     //     _ => Box::new(SimpleMapBuilder::new(new_depth))
     // }
 
-    Box::new(DrunkardsWalkBuilder::new(new_depth))
+    Box::new(DrunkardsWalkBuilder::new(new_depth, DrunkardSettings{ spawn_mode: DrunkSpawnMode::StartingPoint }))
 }
