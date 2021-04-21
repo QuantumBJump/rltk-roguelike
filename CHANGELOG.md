@@ -1,6 +1,14 @@
 # v0.3.0
 ## Features
 * Factored map building out into a module to improve extensibility
+* Added several new types of map generation
+    * Sewer level using Binary Space Partition
+    * Castle level using Binary Space Partition
+    * Cellular Automata cave
+    * Several Drunkard's Walk maps
+        * Main central cavern
+        * Large, open hallways
+        * Tighter, more winding caves
 
 # v0.2.0
 ## Features
