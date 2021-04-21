@@ -10,7 +10,9 @@ use std::collections::HashMap;
 pub enum DrunkSpawnMode { StartingPoint, Random }
 
 pub struct DrunkardSettings {
-    pub spawn_mode: DrunkSpawnMode
+    pub spawn_mode: DrunkSpawnMode,
+    pub drunken_lifetime: i32,
+    pub floor_percent: f32,
 }
 
 pub struct DrunkardsWalkBuilder {
@@ -77,7 +79,7 @@ impl DrunkardsWalkBuilder {
         self.map.tiles[start_idx] = TileType::Floor;
 
         let total_tiles = self.map.width * self.map.height;
-        let desired_floor_tiles = (total_tiles / 2) as usize;
+        let desired_floor_tiles = (self.settings.floor_percent * total_tiles as f32) as usize;
         let mut floor_tile_count = self.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
         let mut digger_count = 0;
         let mut active_digger_count = 0;
@@ -103,7 +105,7 @@ impl DrunkardsWalkBuilder {
                     }
                 }
             }
-            let mut drunk_life = 400;
+            let mut drunk_life = self.settings.drunken_lifetime;
 
             while drunk_life > 0 {
                 let drunk_idx = self.map.xy_idx(drunk_x, drunk_y);
