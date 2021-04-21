@@ -4,7 +4,6 @@ use super::{
     generate_voronoi_spawn_regions,
 };
 use rltk::RandomNumberGenerator;
-use rltk::DijkstraMap;
 use std::collections::HashMap;
 use specs::prelude::*;
 
