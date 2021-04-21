@@ -9,6 +9,7 @@
         * Main central cavern
         * Large, open hallways
         * Tighter, more winding caves
+    * Labyrinth
 
 # v0.2.0
 ## Features
