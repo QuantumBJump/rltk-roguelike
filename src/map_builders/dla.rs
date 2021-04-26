@@ -66,7 +66,7 @@ impl DLABuilder {
             depth: new_depth,
             history: Vec::new(),
             noise_areas: HashMap::new(),
-            algorithm: DLAAlgorithm::WalkInwards,
+            algorithm: DLAAlgorithm::WalkOutwards,
             brush_size: 1,
             symmetry: DLASymmetry::None,
             floor_percent: 0.25,
@@ -112,11 +112,28 @@ impl DLABuilder {
                         digger_idx = self.map.xy_idx(digger_x, digger_y);
                     }
                     self.paint(prev_x, prev_y);
-                    floor_tile_count += 1;
-                    self.take_snapshot();
+                }
+                DLAAlgorithm::WalkOutwards => {
+                    let mut digger_x = self.starting_position.x;
+                    let mut digger_y = self.starting_position.y;
+                    let mut digger_idx = self.map.xy_idx(digger_x, digger_y);
+                    while self.map.tiles[digger_idx] == TileType::Floor {
+                        let stagger_direction = rng.roll_dice(1, 4);
+                        match stagger_direction {
+                            1 => { if digger_x > 2 { digger_x -= 1; } }
+                            2 => { if digger_x < self.map.width-2 { digger_x += 1; } }
+                            3 => { if digger_y > 2 { digger_y -= 1; } }
+                            _ => { if digger_y < self.map.height-2 { digger_y += 1; } }
+                        }
+                        digger_idx = self.map.xy_idx(digger_x, digger_y);
+                    }
+                    self.paint(digger_x, digger_y);
                 }
                 _ => {}
             }
+
+            self.take_snapshot();
+            floor_tile_count = self.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
         }
 
         // Find all the tiles we can reach from the starting point.
