@@ -19,6 +19,8 @@ mod common;
 use common::*;
 mod voronoi;
 use voronoi::VoronoiBuilder;
+mod prefab_builder;
+use prefab_builder::*;
 
 mod waveform_collapse;
 use waveform_collapse::*;
@@ -37,8 +39,9 @@ pub trait MapBuilder {
 
 pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     // randomly choose a type of map to build
+    /*
     let mut rng = rltk::RandomNumberGenerator::new();
-    let builder = rng.roll_dice(1, 18);
+    let builder = rng.roll_dice(1, 17);
     let mut result: Box<dyn MapBuilder>;
     match builder {
         1 => { result = Box::new(BspDungeonBuilder::new(new_depth)); }
@@ -57,7 +60,6 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
         14 => { result = Box::new(VoronoiBuilder::pythagoras(new_depth)); }
         15 => { result = Box::new(VoronoiBuilder::manhattan(new_depth)); }
         16 => { result = Box::new(VoronoiBuilder::chebyshev(new_depth)); }
-        17 => { result = Box::new(WaveformCollapseBuilder::test_map(new_depth)); }
         _ => { result = Box::new(SimpleMapBuilder::new(new_depth)); }
     }
 
@@ -66,4 +68,7 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     }
 
     result
+    */
+
+    Box::new(PrefabBuilder::new(new_depth))
 }
