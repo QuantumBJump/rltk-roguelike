@@ -202,8 +202,12 @@ pub fn patterns_to_constraints(patterns: Vec<Vec<TileType>>, chunk_size: i32) ->
                         c.compatible_with[direction].push(j);
                     }
                     if !has_any {
-                        // If there are no compatible exits on a given side, we don't care what goes there
-                        c.compatible_with[direction].push(j);
+                        // There's no exits on this side of our pattern
+                        // Only match if the other edge also has no exits
+                        let matching_exit_count = potential.exits[opposite].iter().filter(|a| !**a).count();
+                        if matching_exit_count == 0 {
+                            c.compatible_with[direction].push(j);
+                        }
                     }
                 }
             }

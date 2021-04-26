@@ -72,7 +72,14 @@ impl WaveformCollapseBuilder {
         let mut rng = RandomNumberGenerator::new();
 
         // Size of a chunk
-        const CHUNK_SIZE: i32 = 5;
+        const CHUNK_SIZE: i32 = 8;
+
+        // let mut ca = super::CellularAutomataBuilder::new(0);
+        // ca.build_map();
+        // self.map = ca.get_map();
+        // for t in self.map.tiles.iter_mut() {
+        //     if *t == TileType::DownStairs { * t = TileType::Floor; }
+        // }
 
         self.map = load_rex_map(self.depth, &rltk::rex::XpFile::from_resource("../resources/wfc-demo1.xp").unwrap());
         self.take_snapshot();
