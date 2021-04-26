@@ -17,6 +17,8 @@ mod dla;
 use dla::*;
 mod common;
 use common::*;
+mod voronoi;
+use voronoi::VoronoiBuilder;
 
 pub trait MapBuilder {
     // Generators
@@ -33,7 +35,7 @@ pub trait MapBuilder {
 pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     // randomly choose a type of map to build
     let mut rng = rltk::RandomNumberGenerator::new();
-    let builder = rng.roll_dice(1, 14);
+    let builder = rng.roll_dice(1, 17);
     match builder {
         1 => Box::new(BspDungeonBuilder::new(new_depth)),
         2 => Box::new(BspInteriorBuilder::new(new_depth)),
@@ -48,6 +50,9 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
         11 => Box::new(DLABuilder::insectoid(new_depth)),
         12 => Box::new(DrunkardsWalkBuilder::fat_passages(new_depth)),
         13 => Box::new(DrunkardsWalkBuilder::fearful_symmetry(new_depth)),
+        14 => Box::new(VoronoiBuilder::pythagoras(new_depth)),
+        15 => Box::new(VoronoiBuilder::manhattan(new_depth)),
+        16 => Box::new(VoronoiBuilder::chebyshev(new_depth)),
         _ => Box::new(SimpleMapBuilder::new(new_depth))
     }
 }
