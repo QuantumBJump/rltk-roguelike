@@ -10,6 +10,8 @@ mod image_loader;
 use image_loader::*;
 mod constraints;
 use constraints::*;
+mod solver;
+use solver::*;
 mod common;
 use common::*;
 
@@ -70,7 +72,7 @@ impl WaveformCollapseBuilder {
         let mut rng = RandomNumberGenerator::new();
 
         // Size of a chunk
-        const CHUNK_SIZE: i32 = 7;
+        const CHUNK_SIZE: i32 = 5;
 
         self.map = load_rex_map(self.depth, &rltk::rex::XpFile::from_resource("../resources/wfc-demo1.xp").unwrap());
         self.take_snapshot();
@@ -79,15 +81,31 @@ impl WaveformCollapseBuilder {
         let constraints = patterns_to_constraints(patterns, CHUNK_SIZE);
         self.render_tile_gallery(&constraints, CHUNK_SIZE);
 
+        self.map = Map::new(self.depth);
+        loop {
+            let mut solver = Solver::new(constraints.clone(), CHUNK_SIZE, &self.map);
+            while !solver.iteration(&mut self.map, &mut rng) {
+                self.take_snapshot();
+            }
+            self.take_snapshot();
+            if solver.possible { break; } // If it has hit an impossible condition, try again.
+        }
+
         // Find a starting point; start at the middle & walk left until we find an open space
         self.starting_position = Position{ x: self.map.width / 2, y: self.map.height / 2 };
-        let start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
+        let mut start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
+        while self.map.tiles[start_idx] != TileType::Floor {
+            self.starting_position.x -= 1;
+            start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
+        }
 
         // Find all tiles we can reach from the starting point
         let exit_tile = get_most_distant_area(&mut self.map, start_idx, true);
+        self.take_snapshot();
 
         // Place stairs
         self.map.tiles[exit_tile] = TileType::DownStairs;
+        self.take_snapshot();
 
         // Build a noise map
         self.noise_areas = generate_voronoi_spawn_regions(&self.map, &mut rng);
