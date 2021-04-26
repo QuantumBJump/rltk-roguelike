@@ -10,6 +10,7 @@ use std::collections::HashMap;
 pub enum DLAAlgorithm { WalkInwards, WalkOutwards, CentralAttractor }
 
 #[derive(PartialEq, Copy, Clone)]
+#[allow(dead_code)]
 pub enum DLASymmetry { None, Horizontal, Vertical, Both }
 
 pub struct DLABuilder {
@@ -59,6 +60,7 @@ impl MapBuilder for DLABuilder {
 }
 
 impl DLABuilder {
+    #[allow(dead_code)]
     pub fn new(new_depth: i32) -> DLABuilder {
         DLABuilder {
             map: Map::new(new_depth),
@@ -69,6 +71,63 @@ impl DLABuilder {
             algorithm: DLAAlgorithm::WalkInwards,
             brush_size: 2,
             symmetry: DLASymmetry::None,
+            floor_percent: 0.25,
+        }
+    }
+
+    // Constructors
+    pub fn walk_inwards(new_depth: i32) -> DLABuilder {
+        DLABuilder {
+            map: Map::new(new_depth),
+            starting_position: Position{ x: 0, y: 0 },
+            depth: new_depth,
+            history: Vec::new(),
+            noise_areas: HashMap::new(),
+            algorithm: DLAAlgorithm::WalkInwards,
+            brush_size: 1,
+            symmetry: DLASymmetry::None,
+            floor_percent: 0.25,
+        }
+    }
+
+    pub fn walk_outwards(new_depth: i32) -> DLABuilder {
+        DLABuilder {
+            map: Map::new(new_depth),
+            starting_position: Position{ x: 0, y: 0 },
+            depth: new_depth,
+            history: Vec::new(),
+            noise_areas: HashMap::new(),
+            algorithm: DLAAlgorithm::WalkOutwards,
+            brush_size: 2,
+            symmetry: DLASymmetry::None,
+            floor_percent: 0.25,
+        }
+    }
+
+    pub fn central_attractor(new_depth: i32) -> DLABuilder {
+        DLABuilder {
+            map: Map::new(new_depth),
+            starting_position: Position{ x: 0, y: 0 },
+            depth: new_depth,
+            history: Vec::new(),
+            noise_areas: HashMap::new(),
+            algorithm: DLAAlgorithm::CentralAttractor,
+            brush_size: 2,
+            symmetry: DLASymmetry::None,
+            floor_percent: 0.25,
+        }
+    }
+
+    pub fn insectoid(new_depth: i32) -> DLABuilder {
+        DLABuilder {
+            map: Map::new(new_depth),
+            starting_position: Position{ x: 0, y: 0 },
+            depth: new_depth,
+            history: Vec::new(),
+            noise_areas: HashMap::new(),
+            algorithm: DLAAlgorithm::CentralAttractor,
+            brush_size: 2,
+            symmetry: DLASymmetry::Horizontal,
             floor_percent: 0.25,
         }
     }
@@ -152,7 +211,6 @@ impl DLABuilder {
                     }
                     self.paint(prev_x, prev_y);
                 }
-                _ => {}
             }
 
             self.take_snapshot();
