@@ -66,7 +66,7 @@ impl DLABuilder {
             depth: new_depth,
             history: Vec::new(),
             noise_areas: HashMap::new(),
-            algorithm: DLAAlgorithm::WalkOutwards,
+            algorithm: DLAAlgorithm::CentralAttractor,
             brush_size: 1,
             symmetry: DLASymmetry::None,
             floor_percent: 0.25,
@@ -128,6 +128,29 @@ impl DLABuilder {
                         digger_idx = self.map.xy_idx(digger_x, digger_y);
                     }
                     self.paint(digger_x, digger_y);
+                }
+                DLAAlgorithm::CentralAttractor => {
+                    let mut digger_x = rng.roll_dice(1, self.map.width - 3) + 1;
+                    let mut digger_y = rng.roll_dice(1, self.map.height - 3) + 1;
+                    let mut prev_x = digger_x;
+                    let mut prev_y = digger_y;
+                    let mut digger_idx = self.map.xy_idx(digger_x, digger_y);
+
+                    let mut path = rltk::line2d(
+                        rltk::LineAlg::Bresenham,
+                        rltk::Point::new( digger_x, digger_y ),
+                        rltk::Point::new( self.starting_position.x, self.starting_position.y )
+                    );
+
+                    while self.map.tiles[digger_idx] == TileType::Wall && !path.is_empty() {
+                        prev_x = digger_x;
+                        prev_y = digger_y;
+                        digger_x = path[0].x;
+                        digger_y = path[0].y;
+                        path.remove(0);
+                        digger_idx = self.map.xy_idx(digger_x, digger_y);
+                    }
+                    self.paint(prev_x, prev_y);
                 }
                 _ => {}
             }
