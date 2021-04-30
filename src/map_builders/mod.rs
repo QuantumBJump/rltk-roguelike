@@ -28,8 +28,8 @@ use waveform_collapse::*;
 pub trait MapBuilder {
     // Generators
     fn build_map(&mut self);
-    fn spawn_entities(&mut self, ecs: &mut World);
     fn take_snapshot(&mut self);
+    fn spawn_entities(&mut self, ecs: &mut World);
 
     // Getters
     fn get_map(&self) -> Map;
@@ -70,5 +70,14 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     result
     */
 
-    Box::new(PrefabBuilder::new(new_depth))
+    Box::new(
+        PrefabBuilder::new(
+            new_depth,
+            Some(
+                Box::new(
+                    CellularAutomataBuilder::new(new_depth)
+                )
+            )
+        )
+    )
 }
