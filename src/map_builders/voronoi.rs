@@ -14,9 +14,11 @@ pub struct VoronoiBuilder {
     starting_position: Position,
     depth: i32,
     history: Vec<Map>,
+    /// HashMap<area ID, Vec<tile index>>
     noise_areas: HashMap<i32, Vec<usize>>,
     n_seeds: usize,
     distance_algorithm: DistanceAlgorithm,
+    spawn_list: Vec<(usize, String)>,
 }
 
 impl MapBuilder for VoronoiBuilder {
@@ -32,14 +34,12 @@ impl MapBuilder for VoronoiBuilder {
         self.history.clone()
     }
 
-    fn build_map(&mut self) {
-        self.build();
+    fn get_spawn_list(&self) -> &Vec<(usize, String)> {
+        &self.spawn_list
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for area in self.noise_areas.iter() {
-            spawner::spawn_region(ecs, area.1, self.depth);
-        }
+    fn build_map(&mut self) {
+        self.build();
     }
 
     fn take_snapshot(&mut self) {
@@ -64,6 +64,7 @@ impl VoronoiBuilder {
             noise_areas: HashMap::new(),
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Chebyshev,
+            spawn_list: Vec::new(),
         }
     }
 
@@ -76,6 +77,7 @@ impl VoronoiBuilder {
             noise_areas: HashMap::new(),
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Pythagoras,
+            spawn_list: Vec::new(),
         }
     }
 
@@ -88,6 +90,7 @@ impl VoronoiBuilder {
             noise_areas: HashMap::new(),
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Manhattan,
+            spawn_list: Vec::new(),
         }
     }
 
@@ -100,6 +103,7 @@ impl VoronoiBuilder {
             noise_areas: HashMap::new(),
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Chebyshev,
+            spawn_list: Vec::new(),
         }
     }
 
@@ -192,5 +196,11 @@ impl VoronoiBuilder {
 
         // Now build a noise map for use in spawning entities later
         self.noise_areas = generate_voronoi_spawn_regions(&self.map, &mut rng);
+
+
+        // Populate spawn list
+        for area in self.noise_areas.iter() {
+            spawner::spawn_region(&self.map, &mut rng, area.1, self.depth, &mut self.spawn_list);
+        }
     }
 }

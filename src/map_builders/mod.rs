@@ -19,6 +19,8 @@ mod common;
 use common::*;
 mod voronoi;
 use voronoi::VoronoiBuilder;
+mod prefab_builder;
+use prefab_builder::*;
 
 mod waveform_collapse;
 use waveform_collapse::*;
@@ -26,19 +28,27 @@ use waveform_collapse::*;
 pub trait MapBuilder {
     // Generators
     fn build_map(&mut self);
-    fn spawn_entities(&mut self, ecs: &mut World);
     fn take_snapshot(&mut self);
 
     // Getters
     fn get_map(&self) -> Map;
     fn get_starting_position(&self) -> Position;
     fn get_snapshot_history(&self) -> Vec<Map>;
+    fn get_spawn_list(&self) -> &Vec<(usize, String)>;
+
+    // Defaults
+    fn spawn_entities(&mut self, ecs: &mut World) {
+        for entity in self.get_spawn_list().iter() {
+            spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
+        }
+    }
 }
 
 pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     // randomly choose a type of map to build
+    /*
     let mut rng = rltk::RandomNumberGenerator::new();
-    let builder = rng.roll_dice(1, 18);
+    let builder = rng.roll_dice(1, 17);
     let mut result: Box<dyn MapBuilder>;
     match builder {
         1 => { result = Box::new(BspDungeonBuilder::new(new_depth)); }
@@ -57,7 +67,6 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
         14 => { result = Box::new(VoronoiBuilder::pythagoras(new_depth)); }
         15 => { result = Box::new(VoronoiBuilder::manhattan(new_depth)); }
         16 => { result = Box::new(VoronoiBuilder::chebyshev(new_depth)); }
-        17 => { result = Box::new(WaveformCollapseBuilder::test_map(new_depth)); }
         _ => { result = Box::new(SimpleMapBuilder::new(new_depth)); }
     }
 
@@ -66,4 +75,16 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     }
 
     result
+    */
+
+    Box::new(
+        PrefabBuilder::new(
+            new_depth,
+            Some(
+                Box::new(
+                    CellularAutomataBuilder::new(new_depth)
+                )
+            )
+        )
+    )
 }
