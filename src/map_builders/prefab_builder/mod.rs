@@ -185,13 +185,6 @@ impl PrefabBuilder {
 
     /// Apply a prefabricated section to the map.
     pub fn apply_sectional(&mut self, section: &prefab_sections::PrefabSection) {
-        // Build the map
-        let prev_builder = self.previous_builder.as_mut().unwrap();
-        prev_builder.build_map();
-        self.starting_position = prev_builder.get_starting_position();
-        self.map = prev_builder.get_map().clone();
-        self.take_snapshot();
-
         use prefab_sections::*;
 
         let string_vec = PrefabBuilder::read_ascii_to_vec(section.template);
@@ -212,6 +205,25 @@ impl PrefabBuilder {
             VerticalPlacement::Bottom => chunk_y = (self.map.height - 1) - section.height as i32,
         }
         println!("{}, {}", chunk_x, chunk_y);
+
+        // Build the map
+        let prev_builder = self.previous_builder.as_mut().unwrap();
+        prev_builder.build_map();
+        self.starting_position = prev_builder.get_starting_position();
+        self.map = prev_builder.get_map().clone();
+        // Add previous map's spawns, but only if they don't overlap the prefab
+        for e in prev_builder.get_spawn_list().iter() {
+            let idx = e.0;
+            let x = idx as i32 % self.map.width;
+            let y = idx as i32 / self.map.height;
+            if x < chunk_x || x > (chunk_x + section.width as i32) ||
+                y < chunk_y || y > (chunk_y + section.height as i32) {
+                    self.spawn_list.push(
+                        (idx, e.1.to_string())
+                    )
+                }
+        }
+        self.take_snapshot();
 
         let mut i = 0;
         for ty in 0..section.height {
