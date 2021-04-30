@@ -12,6 +12,7 @@ pub struct SimpleMapBuilder{
     depth: i32,
     rooms: Vec<Rect>,
     history: Vec<Map>,
+    spawn_list: Vec<(usize, String)>,
 }
 
 impl MapBuilder for SimpleMapBuilder {
@@ -28,15 +29,13 @@ impl MapBuilder for SimpleMapBuilder {
         self.history.clone()
     }
 
+    fn get_spawn_list(&self) -> &Vec<(usize, String)> {
+        &self.spawn_list
+    }
+
     // Generators
     fn build_map(&mut self) {
         self.rooms_and_corridors();
-    }
-
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for room in self.rooms.iter().skip(1) {
-            spawner::spawn_room(ecs, room, self.depth);
-        }
     }
 
     /// Takes a snapshot of the current state of the map, if generation visualisation is turned on
@@ -60,6 +59,7 @@ impl SimpleMapBuilder {
             depth: new_depth,
             rooms: Vec::new(),
             history: Vec::new(),
+            spawn_list: Vec::new(),
         }
     }
 
@@ -115,5 +115,10 @@ impl SimpleMapBuilder {
         // Set player starting position
         let start_pos = self.rooms[0].center();
         self.starting_position = Position{ x: start_pos.0, y: start_pos.1 };
+
+        // Populate spawn list
+        for room in self.rooms.iter().skip(1) {
+            spawner::spawn_room(&self.map, &mut rng, room, self.depth, &mut self.spawn_list);
+        }
     }
 }

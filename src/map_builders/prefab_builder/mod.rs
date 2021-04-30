@@ -23,8 +23,8 @@ pub struct PrefabBuilder {
     depth: i32,
     history: Vec<Map>,
     mode: PrefabMode,
-    spawns: Vec<(usize, String)>,
     previous_builder: Option<Box<dyn MapBuilder>>,
+    spawn_list: Vec<(usize, String)>,
 }
 
 impl MapBuilder for PrefabBuilder {
@@ -40,14 +40,12 @@ impl MapBuilder for PrefabBuilder {
         self.history.clone()
     }
 
-    fn build_map(&mut self) {
-        self.build();
+    fn get_spawn_list(&self) -> &Vec<(usize, String)> {
+        &self.spawn_list
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for entity in self.spawns.iter() {
-            spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
-        }
+    fn build_map(&mut self) {
+        self.build();
     }
 
     fn take_snapshot(&mut self) {
@@ -71,8 +69,8 @@ impl PrefabBuilder {
             // mode: PrefabMode::RexLevel{ template: "../resources/wfc-populated.xp" },
             // mode: PrefabMode::Constant{ level: prefab_levels::WFC_POPULATED },
             mode: PrefabMode::Sectional{ section: prefab_sections::UNDERGROUND_FORT },
-            spawns: Vec::new(),
             previous_builder,
+            spawn_list: Vec::new(),
         }
     }
 
@@ -117,23 +115,23 @@ impl PrefabBuilder {
             '>' => self.map.tiles[idx] = TileType::DownStairs,
             'g' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "Goblin".to_string()));
+                self.spawn_list.push((idx, "Goblin".to_string()));
             }
             'o' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "Orc".to_string()));
+                self.spawn_list.push((idx, "Orc".to_string()));
             }
             '^' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "Bear Trap".to_string()));
+                self.spawn_list.push((idx, "Bear Trap".to_string()));
             }
             '%' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "Rations".to_string()));
+                self.spawn_list.push((idx, "Rations".to_string()));
             }
             '!' => {
                 self.map.tiles[idx] = TileType::Floor;
-                self.spawns.push((idx, "Health Potion".to_string()));
+                self.spawn_list.push((idx, "Health Potion".to_string()));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph loading map: {}", (ch as u8) as char));
