@@ -4,7 +4,6 @@ use super::{
 };
 use rltk::RandomNumberGenerator;
 use std::collections::HashMap;
-use specs::prelude::*;
 
 mod constraints;
 use constraints::*;
@@ -89,6 +88,7 @@ impl WaveformCollapseBuilder {
         let prebuilder = &mut self.derive_from.as_mut().unwrap();
         prebuilder.build_map();
         self.map = prebuilder.get_map();
+        self.history = prebuilder.get_snapshot_history();
         for t in self.map.tiles.iter_mut() {
             if *t == TileType::DownStairs { * t = TileType::Floor; }
         }
