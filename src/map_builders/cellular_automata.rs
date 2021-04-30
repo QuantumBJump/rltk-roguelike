@@ -5,7 +5,6 @@ use super::{
 };
 use rltk::RandomNumberGenerator;
 use std::collections::HashMap;
-use specs::prelude::*;
 
 pub struct CellularAutomataBuilder {
     map: Map,

@@ -3,7 +3,6 @@ use super::{
     get_most_distant_area, generate_voronoi_spawn_regions,
 };
 use rltk::RandomNumberGenerator;
-use specs::prelude::*;
 use std::collections::HashMap;
 
 pub struct MazeBuilder {

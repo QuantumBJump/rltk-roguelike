@@ -3,7 +3,6 @@ use super::{
     SHOW_MAPGEN_VISUALISER,
 };
 use rltk::RandomNumberGenerator;
-use specs::prelude::*;
 
 const MIN_ROOM_SIZE: i32 = 8;
 

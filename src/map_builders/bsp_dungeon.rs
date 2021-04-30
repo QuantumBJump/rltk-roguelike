@@ -1,6 +1,6 @@
 /// A sewer-like level with one main, winding path with several offshoots.
 use super::{
-    Map, Position, Rect, MapBuilder, spawner, World, SHOW_MAPGEN_VISUALISER,
+    Map, Position, Rect, MapBuilder, spawner, SHOW_MAPGEN_VISUALISER,
     TileType, apply_room_to_map
 };
 use rltk::RandomNumberGenerator;
