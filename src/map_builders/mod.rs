@@ -82,7 +82,7 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
             new_depth,
             Some(
                 Box::new(
-                    CellularAutomataBuilder::new(new_depth)
+                    SimpleMapBuilder::new(new_depth)
                 )
             )
         )
