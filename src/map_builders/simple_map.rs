@@ -24,7 +24,7 @@ impl SimpleMapBuilder {
         const MAX_SIZE: i32 = 10;
         let mut rooms: Vec<Rect> = Vec::new();
 
-        for i in 0..MAX_ROOMS {
+        for _i in 0..MAX_ROOMS {
             // Randomly determine where to place a room.
             let w = rng.range(MIN_SIZE, MAX_SIZE);
             let h = rng.range(MIN_SIZE, MAX_SIZE);

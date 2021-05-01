@@ -29,6 +29,26 @@ pub fn apply_vertical_tunnel(map: &mut Map, y1: i32, y2: i32, x: i32) {
     }
 }
 
+pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32) {
+    let mut x = x1;
+    let mut y = y1;
+
+    while x != x2 || y != y2 {
+        if x < x2 {
+            x += 1;
+        } else if x > x2 {
+            x -= 1;
+        } else if y < y2 {
+            y += 1;
+        } else if y > y2 {
+            y -= 1;
+        }
+
+        let idx = map.xy_idx(x, y);
+        map.tiles[idx] = TileType::Floor;
+    }
+}
+
 /// Gets the most distant tile reachable from the start position of the map.
 /// Optionally culls areas of the map which are unreachable from the start location
 pub fn get_most_distant_area(map: &mut Map, start_idx: usize, remove_unreachable: bool) -> usize {
