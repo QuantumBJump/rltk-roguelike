@@ -22,6 +22,7 @@ impl WaveformCollapseBuilder {
     /// # Arguments
     /// * new_depth - the new map depth
     /// * derive_from - either None, or a boxed MapBuilder, as output by `random_builder`
+    #[allow(dead_code)]
     pub fn new() -> Box<WaveformCollapseBuilder> {
         Box::new(WaveformCollapseBuilder {})
     }
