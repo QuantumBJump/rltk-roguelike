@@ -168,12 +168,12 @@ fn random_initial_builder(rng: &mut rltk::RandomNumberGenerator) -> (Box<dyn Ini
 /// Randomly generate a map
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
-    builder.start_with(VoronoiCellBuilder::pythagoras());
-    builder.with(CellularAutomataBuilder::new());
+    builder.start_with(SimpleMapBuilder::new());
+    builder.with(DrunkardsWalkBuilder::winding_passages());
     builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
     builder.with(VoronoiSpawning::new());
-    builder.with(DistantExit::new());
+    builder.with(RoomBasedStairs::new());
     builder
 }
 //     let mut builder = BuilderChain::new(new_depth);
