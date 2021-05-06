@@ -168,36 +168,45 @@ fn random_initial_builder(rng: &mut rltk::RandomNumberGenerator) -> (Box<dyn Ini
 /// Randomly generate a map
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
-    let (random_starter, mut has_rooms) = random_initial_builder(rng);
-    builder.start_with(random_starter);
-
-    if rng.roll_dice(1, 3) == 1 {
-        // 1/3 chance of running through WFC algorithm
-        // Set has_rooms to false because if we run WFC on a room map
-        // The rooms will break
-        has_rooms = false;
-        builder.with(WaveformCollapseBuilder::new());
-    }
-
-    if has_rooms {
-        builder.with(RoomBasedSpawner::new());
-        builder.with(RoomBasedStairs::new());
-        builder.with(RoomBasedStartingPosition::new());
-    } else {
-        builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
-        builder.with(CullUnreachable::new());
-        builder.with(VoronoiSpawning::new());
-        builder.with(DistantExit::new());
-    }
-
-
-    if rng.roll_dice(1, 20) == 1 {
-        // 1/20 chance of an underground fort
-        builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
-    }
-
-    // Apply room vaults
-    builder.with(PrefabBuilder::vaults());
-
+    builder.start_with(VoronoiCellBuilder::pythagoras());
+    builder.with(CellularAutomataBuilder::new());
+    builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
+    builder.with(CullUnreachable::new());
+    builder.with(VoronoiSpawning::new());
+    builder.with(DistantExit::new());
     builder
 }
+//     let mut builder = BuilderChain::new(new_depth);
+//     let (random_starter, mut has_rooms) = random_initial_builder(rng);
+//     builder.start_with(random_starter);
+
+//     if rng.roll_dice(1, 3) == 1 {
+//         // 1/3 chance of running through WFC algorithm
+//         // Set has_rooms to false because if we run WFC on a room map
+//         // The rooms will break
+//         has_rooms = false;
+//         builder.with(WaveformCollapseBuilder::new());
+//     }
+
+//     if has_rooms {
+//         builder.with(RoomBasedSpawner::new());
+//         builder.with(RoomBasedStairs::new());
+//         builder.with(RoomBasedStartingPosition::new());
+//     } else {
+//         builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
+//         builder.with(CullUnreachable::new());
+//         builder.with(VoronoiSpawning::new());
+//         builder.with(DistantExit::new());
+//     }
+
+
+//     if rng.roll_dice(1, 20) == 1 {
+//         // 1/20 chance of an underground fort
+//         builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
+//     }
+
+//     // Apply room vaults
+//     builder.with(PrefabBuilder::vaults());
+
+//     builder
+// }
