@@ -40,31 +40,29 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         if y < 49 { ctx.print(2, y, s); }
         y += 1;
     }
-
-    // Draw mouse cursor
-    let mouse_pos = ctx.mouse_pos();
-    ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::MAGENTA));
-
-    // Draw tooltips
-    draw_tooltips(ecs, ctx);
 }
 
-fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
+fn draw_tooltips(ecs: &World, ctx: &mut Rltk, target: Option<(i32, i32)>) {
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
     let hidden = ecs.read_storage::<Hidden>();
 
-    let mouse_pos = ctx.mouse_pos();
+    let target_pos;
+    if let Some(target) = target {
+        target_pos = target;
+    } else {
+        target_pos = ctx.mouse_pos();
+    }
     // Ignore if mouse is out of bounds.
-    if mouse_pos.0 >= map.width || mouse_pos.1 >= map.height { return; }
+    if target_pos.0 >= map.width || target_pos.1 >= map.height { return; }
 
     let mut tooltip: Vec<String> = Vec::new();
     // Populate tooltip
     for (name, position, _hidden) in (&names, &positions, !&hidden).join() {
         // Get the indices of all named entities
         let idx = map.xy_idx(position.x, position.y);
-        if position.x == mouse_pos.0 && position.y == mouse_pos.1 && map.visible_tiles[idx] {
+        if position.x == target_pos.0 && position.y == target_pos.1 && map.visible_tiles[idx] {
             // If mouse is over entity, and entity is visible
             tooltip.push(name.name.to_string());
         }
@@ -78,30 +76,31 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
         }
         width += 3;
 
-        if mouse_pos.0 > 40 {
+        if target_pos.0 > 40 {
             // If mouse in right half of screen, render tooltip to left.
-            let arrow_pos = Point::new(mouse_pos.0 - 2, mouse_pos.1);
-            let left_x = mouse_pos.0 - width;
-            let mut y = mouse_pos.1;
+            let arrow_pos = Point::new(target_pos.0 - 2, target_pos.1);
+            let left_x = target_pos.0 - width;
+            let mut y = target_pos.1;
             for s in tooltip.iter() {
                 ctx.print_color(left_x, y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), s);
-                let padding = (width - s.len() as i32) - 1;
+                let padding = width - s.len() as i32;
                 for i in 0..padding {
-                    ctx.print_color(arrow_pos.x - i, y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), &" ".to_string());
+                    ctx.print_color(arrow_pos.x - i + 1, y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), &" ".to_string());
                 }
                 y+=1;
             }
             ctx.print_color(arrow_pos.x, arrow_pos.y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), &"->".to_string());
         } else {
             // If mouse in left half of screen, render tooltip to right
-            let arrow_pos = Point::new(mouse_pos.0 + 1, mouse_pos.1);
-            let left_x = mouse_pos.0 + 3;
-            let mut y = mouse_pos.1;
+            let arrow_pos = Point::new(target_pos.0 + 1, target_pos.1);
+            let left_x = target_pos.0 + 3;
+            let mut y = target_pos.1;
             for s in tooltip.iter() {
                 ctx.print_color(left_x + 1, y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), s);
-                let padding = (width - s.len() as i32) - 1;
+                ctx.print_color(arrow_pos.x, y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), "   ".to_string());
+                let padding = (width - s.len() as i32) - 3;
                 for i in 0..padding {
-                    ctx.print_color(arrow_pos.x + 1 + i, y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), " ".to_string());
+                    ctx.print_color(left_x + s.len() as i32 + i + 1, y, RGB::named(rltk::WHITE), RGB::named(rltk::GREY), " ".to_string());
                 }
                 y+=1;
             }
@@ -287,7 +286,109 @@ pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, range: i32) -> (ItemMenuRes
             return (ItemMenuResult::Cancel, None)
         }
     }
+
     (ItemMenuResult::NoResponse, None)
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum FreeTargetSelection {
+    NoResponse,
+    Cancel,
+    Move{ x: i32, y: i32 }}
+pub fn free_target(gs: &mut State, ctx: &mut Rltk, aim: Option<(i32, i32)>) -> FreeTargetSelection {
+    let mut aim_tile: (i32, i32);
+    let map = gs.ecs.fetch::<Map>();
+    let player_pos = gs.ecs.fetch::<Point>();
+    if let Some(aim) = aim {
+        aim_tile = aim;
+    } else {
+        aim_tile = (player_pos.x, player_pos.y);
+    }
+    if gs.mouse_targetting {
+        aim_tile = ctx.mouse_pos();
+    }
+    if aim_tile.0 < 0 { aim_tile.0 = 0; }
+    if aim_tile.0 > map.width - 1 { aim_tile.0 = map.width - 1; }
+    if aim_tile.1 < 0 { aim_tile.1 = 0; }
+    if aim_tile.1 > map.height - 1 { aim_tile.1 = map.height - 1; }
+    ctx.print_color(5, 0, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Select Target: ");
+
+    // Draw cursor
+    ctx.set_bg(aim_tile.0, aim_tile.1, RGB::named(rltk::CYAN));
+    draw_tooltips(&gs.ecs, ctx, Some(aim_tile));
+
+    match ctx.key {
+        None => FreeTargetSelection::NoResponse,
+        Some(key) => {
+            match key {
+                VirtualKeyCode::Escape => FreeTargetSelection::Cancel,
+                // Move target
+                VirtualKeyCode::Numpad7 => {
+                    gs.mouse_targetting = false;
+                    return FreeTargetSelection::Move{
+                        x: aim_tile.0 - 1,
+                        y: aim_tile.1 - 1,
+                    };
+                },
+                VirtualKeyCode::Up |
+                VirtualKeyCode::Numpad8 => {
+                    gs.mouse_targetting = false;
+                    return FreeTargetSelection::Move{
+                        x: aim_tile.0,
+                        y: aim_tile.1 - 1
+                    };
+                },
+                VirtualKeyCode::Numpad9 => {
+                    gs.mouse_targetting = false;
+                    return FreeTargetSelection::Move{
+                        x: aim_tile.0 + 1,
+                        y: aim_tile.1 - 1,
+                    };
+                },
+                VirtualKeyCode::Numpad4 => {
+                    gs.mouse_targetting = false;
+                    return FreeTargetSelection::Move{
+                        x: aim_tile.0 - 1,
+                        y: aim_tile.1,
+                    };
+                },
+                VirtualKeyCode::Numpad6 => {
+                    gs.mouse_targetting = false;
+                    return FreeTargetSelection::Move{
+                        x: aim_tile.0 + 1,
+                        y: aim_tile.1,
+                    };
+                },
+                VirtualKeyCode::Numpad1 => {
+                    gs.mouse_targetting = false;
+                    return FreeTargetSelection::Move{
+                        x: aim_tile.0 - 1,
+                        y: aim_tile.1 + 1,
+                    };
+                },
+                VirtualKeyCode::Numpad2 => {
+                    gs.mouse_targetting = false;
+                    return FreeTargetSelection::Move{
+                        x: aim_tile.0,
+                        y: aim_tile.1 + 1,
+                    };
+                },
+                VirtualKeyCode::Numpad3 => {
+                    gs.mouse_targetting = false;
+                    return FreeTargetSelection::Move{
+                        x: aim_tile.0 + 1,
+                        y: aim_tile.1 + 1,
+                    };
+                },
+                // Toggle mouse targetting
+                VirtualKeyCode::Numpad5 => {
+                    gs.mouse_targetting = !gs.mouse_targetting;
+                    return FreeTargetSelection::NoResponse;
+                }
+                _ => FreeTargetSelection::NoResponse
+            }
+        }
+    }
 }
 
 // Main menu code

@@ -40,7 +40,7 @@ mod trigger_system;
 pub mod map_builders;
 
 // Constants
-const SHOW_MAPGEN_VISUALISER: bool = true;
+const SHOW_MAPGEN_VISUALISER: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -53,6 +53,7 @@ pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventor
     MagicMapReveal{ row: i32 },
     MapGeneration,
     Wait,
+    FreeTarget{ target: Option<(i32, i32)>},
 }
 
 pub struct State{
@@ -61,6 +62,7 @@ pub struct State{
     mapgen_history: Vec<Map>,
     mapgen_index: usize,
     mapgen_timer: f32,
+    mouse_targetting: bool,
 }
 
 impl State {
@@ -256,6 +258,18 @@ impl GameState for State {
                         let mut intent = self.ecs.write_storage::<WantsToUseItem>();
                         intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseItem{ item, target: result.1 }).expect("Unable to insert intent!");
                         newrunstate = RunState::PlayerTurn;
+                    }
+                }
+            }
+            RunState::FreeTarget{target} => {
+                let result = gui::free_target(self, ctx, target);
+                match result {
+                    gui::FreeTargetSelection::Cancel => {
+                        newrunstate = RunState::AwaitingInput;
+                    },
+                    gui::FreeTargetSelection::NoResponse => {},
+                    gui::FreeTargetSelection::Move{x, y} => {
+                        newrunstate = RunState::FreeTarget{target: Some((x, y))};
                     }
                 }
             }
@@ -459,6 +473,7 @@ fn main() -> rltk::BError {
         mapgen_index: 0,
         mapgen_history: Vec::new(),
         mapgen_timer: 0.0,
+        mouse_targetting: true,
     };
     // Component registration
     gs.ecs.register::<Position>();
