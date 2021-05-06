@@ -1,122 +1,62 @@
-use super::{
-    MapBuilder, Map, TileType, Position, spawner, SHOW_MAPGEN_VISUALISER,
-    get_most_distant_area, generate_voronoi_spawn_regions
-};
+use super::{InitialMapBuilder, BuilderMap, TileType};
 use rltk::RandomNumberGenerator;
-use specs::prelude::*;
-use std::collections::HashMap;
 
 #[derive(PartialEq, Copy, Clone)]
+#[allow(dead_code)]
 pub enum DistanceAlgorithm { Pythagoras, Manhattan, Chebyshev }
 
-pub struct VoronoiBuilder {
-    map: Map,
-    starting_position: Position,
-    depth: i32,
-    history: Vec<Map>,
-    /// HashMap<area ID, Vec<tile index>>
-    noise_areas: HashMap<i32, Vec<usize>>,
+pub struct VoronoiCellBuilder {
     n_seeds: usize,
     distance_algorithm: DistanceAlgorithm,
-    spawn_list: Vec<(usize, String)>,
 }
 
-impl MapBuilder for VoronoiBuilder {
-    fn get_map(&self) -> Map {
-        self.map.clone()
-    }
-
-    fn get_starting_position(&self) -> Position {
-        self.starting_position.clone()
-    }
-
-    fn get_snapshot_history(&self) -> Vec<Map> {
-        self.history.clone()
-    }
-
-    fn get_spawn_list(&self) -> &Vec<(usize, String)> {
-        &self.spawn_list
-    }
-
-    fn build_map(&mut self) {
-        self.build();
-    }
-
-    fn take_snapshot(&mut self) {
-        if SHOW_MAPGEN_VISUALISER {
-            let mut snapshot = self.map.clone();
-            for v in snapshot.revealed_tiles.iter_mut() {
-                *v = true;
-            }
-            self.history.push(snapshot);
-        }
+impl InitialMapBuilder for VoronoiCellBuilder {
+    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap) {
+        self.build(rng, build_data);
     }
 }
 
-impl VoronoiBuilder {
+impl VoronoiCellBuilder {
     #[allow(dead_code)]
-    pub fn new(new_depth: i32) -> VoronoiBuilder {
-        VoronoiBuilder {
-            map: Map::new(new_depth),
-            starting_position: Position{ x: 0, y: 0 },
-            depth: new_depth,
-            history: Vec::new(),
-            noise_areas: HashMap::new(),
+    pub fn new() -> Box<VoronoiCellBuilder> {
+        Box::new(VoronoiCellBuilder {
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Chebyshev,
-            spawn_list: Vec::new(),
-        }
+        })
     }
 
-    pub fn pythagoras(new_depth: i32) -> VoronoiBuilder {
-        VoronoiBuilder {
-            map: Map::new(new_depth),
-            starting_position: Position{ x: 0, y: 0 },
-            depth: new_depth,
-            history: Vec::new(),
-            noise_areas: HashMap::new(),
+    #[allow(dead_code)]
+    pub fn pythagoras() -> Box<VoronoiCellBuilder> {
+        Box::new(VoronoiCellBuilder {
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Pythagoras,
-            spawn_list: Vec::new(),
-        }
+        })
     }
 
-    pub fn manhattan(new_depth: i32) -> VoronoiBuilder {
-        VoronoiBuilder {
-            map: Map::new(new_depth),
-            starting_position: Position{ x: 0, y: 0 },
-            depth: new_depth,
-            history: Vec::new(),
-            noise_areas: HashMap::new(),
+    #[allow(dead_code)]
+    pub fn manhattan() -> Box<VoronoiCellBuilder> {
+        Box::new(VoronoiCellBuilder {
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Manhattan,
-            spawn_list: Vec::new(),
-        }
+        })
     }
 
-    pub fn chebyshev(new_depth: i32) -> VoronoiBuilder {
-        VoronoiBuilder {
-            map: Map::new(new_depth),
-            starting_position: Position{ x: 0, y: 0 },
-            depth: new_depth,
-            history: Vec::new(),
-            noise_areas: HashMap::new(),
+    #[allow(dead_code)]
+    pub fn chebyshev() -> Box<VoronoiCellBuilder> {
+        Box::new(VoronoiCellBuilder {
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Chebyshev,
-            spawn_list: Vec::new(),
-        }
+        })
     }
 
-    fn build(&mut self) {
-        let mut rng = RandomNumberGenerator::new();
-
+    fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         // Make a Voronoi diagram.
         let mut voronoi_seeds: Vec<(usize, rltk::Point)> = Vec::new();
 
         while voronoi_seeds.len() < self.n_seeds {
-            let vx = rng.roll_dice(1, self.map.width-1);
-            let vy = rng.roll_dice(1, self.map.height-1);
-            let vidx = self.map.xy_idx(vx, vy);
+            let vx = rng.roll_dice(1, build_data.map.width-1);
+            let vy = rng.roll_dice(1, build_data.map.height-1);
+            let vidx = build_data.map.xy_idx(vx, vy);
             let candidate = (vidx, rltk::Point::new(vx, vy));
             if !voronoi_seeds.contains(&candidate) {
                 voronoi_seeds.push(candidate);
@@ -124,10 +64,10 @@ impl VoronoiBuilder {
         }
 
         let mut voronoi_distance = vec![(0, 0.0f32) ; self.n_seeds];
-        let mut voronoi_membership: Vec<i32> = vec![0; self.map.width as usize * self.map.height as usize];
+        let mut voronoi_membership: Vec<i32> = vec![0; build_data.map.width as usize * build_data.map.height as usize];
         for (i, vid) in voronoi_membership.iter_mut().enumerate() {
-            let x = i as i32 % self.map.width;
-            let y = i as i32 / self.map.width;
+            let x = i as i32 % build_data.map.width;
+            let y = i as i32 / build_data.map.width;
 
             for (seed, pos) in voronoi_seeds.iter().enumerate() {
                 let distance;
@@ -160,47 +100,21 @@ impl VoronoiBuilder {
         }
 
         // Now draw the map
-        for y in 1..self.map.height-1 {
-            for x in 1..self.map.width-1 {
+        for y in 1..build_data.map.height-1 {
+            for x in 1..build_data.map.width-1 {
                 let mut neighbours = 0;
-                let my_idx = self.map.xy_idx(x, y);
+                let my_idx = build_data.map.xy_idx(x, y);
                 let my_seed = voronoi_membership[my_idx];
-                if voronoi_membership[self.map.xy_idx(x-1, y)] != my_seed { neighbours += 1; }
-                if voronoi_membership[self.map.xy_idx(x+1, y)] != my_seed { neighbours += 1; }
-                if voronoi_membership[self.map.xy_idx(x, y-1)] != my_seed { neighbours += 1; }
-                if voronoi_membership[self.map.xy_idx(x, y+1)] != my_seed { neighbours += 1; }
+                if voronoi_membership[build_data.map.xy_idx(x-1, y)] != my_seed { neighbours += 1; }
+                if voronoi_membership[build_data.map.xy_idx(x+1, y)] != my_seed { neighbours += 1; }
+                if voronoi_membership[build_data.map.xy_idx(x, y-1)] != my_seed { neighbours += 1; }
+                if voronoi_membership[build_data.map.xy_idx(x, y+1)] != my_seed { neighbours += 1; }
 
                 if neighbours < 2 {
-                    self.map.tiles[my_idx] = TileType::Floor;
+                    build_data.map.tiles[my_idx] = TileType::Floor;
                 }
             }
-            self.take_snapshot();
-        }
-
-        // Find a starting point; start at the middle & walk left until we find an opening.
-        self.starting_position = Position{ x: self.map.width / 2, y : self.map.height / 2 };
-        let mut start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
-        while self.map.tiles[start_idx] != TileType::Floor {
-            self.starting_position.x -= 1;
-            start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
-        }
-        self.take_snapshot();
-
-        // Find all the tiles we can reach from the starting point.
-        let exit_tile = get_most_distant_area(&mut self.map, start_idx, true);
-        self.take_snapshot();
-
-        // Place the stairs
-        self.map.tiles[exit_tile] = TileType::DownStairs;
-        self.take_snapshot();
-
-        // Now build a noise map for use in spawning entities later
-        self.noise_areas = generate_voronoi_spawn_regions(&self.map, &mut rng);
-
-
-        // Populate spawn list
-        for area in self.noise_areas.iter() {
-            spawner::spawn_region(&self.map, &mut rng, area.1, self.depth, &mut self.spawn_list);
+            build_data.take_snapshot();
         }
     }
 }

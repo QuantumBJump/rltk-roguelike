@@ -18,69 +18,181 @@ use dla::*;
 mod common;
 use common::*;
 mod voronoi;
-use voronoi::VoronoiBuilder;
+use voronoi::VoronoiCellBuilder;
 mod prefab_builder;
 use prefab_builder::*;
+
+mod room_based_spawner;
+use room_based_spawner::RoomBasedSpawner;
+mod room_based_starting_position;
+use room_based_starting_position::RoomBasedStartingPosition;
+mod room_based_stairs;
+use room_based_stairs::RoomBasedStairs;
+
+mod area_starting_points;
+use area_starting_points::*;
+mod voronoi_spawning;
+use voronoi_spawning::VoronoiSpawning;
+mod distant_exit;
+use distant_exit::DistantExit;
+mod cull_unreachable;
+use cull_unreachable::CullUnreachable;
 
 mod waveform_collapse;
 use waveform_collapse::*;
 
-pub trait MapBuilder {
-    // Generators
-    fn build_map(&mut self);
-    fn take_snapshot(&mut self);
+/// BuilderMap stores shared state which can be accessed by various different builders.
+pub struct BuilderMap {
+    /// List of places to spawn things & what to spawn there: Vec<(tile_idx, entity_to_spawn)>
+    pub spawn_list: Vec<(usize, String)>,
+    pub map: Map,
+    /// Which tile the player starts at
+    pub starting_position: Option<Position>,
+    pub rooms: Option<Vec<Rect>>,
+    pub history: Vec<Map>,
+}
 
-    // Getters
-    fn get_map(&self) -> Map;
-    fn get_starting_position(&self) -> Position;
-    fn get_snapshot_history(&self) -> Vec<Map>;
-    fn get_spawn_list(&self) -> &Vec<(usize, String)>;
+impl BuilderMap {
+    fn take_snapshot(&mut self) {
+        if SHOW_MAPGEN_VISUALISER {
+            let mut snapshot = self.map.clone();
+            for v in snapshot.revealed_tiles.iter_mut() {
+                *v = true;
+            }
+            self.history.push(snapshot);
+        }
+    }
+}
 
-    // Defaults
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for entity in self.get_spawn_list().iter() {
+/// BuilderChain stores all the various chained map builders,
+/// along with the shared state they need access to.
+pub struct BuilderChain {
+    /// The builder which creates the initial map state
+    starter: Option<Box<dyn InitialMapBuilder>>,
+    /// Further builders which modify the initial map
+    builders: Vec<Box<dyn MetaMapBuilder>>,
+    pub build_data: BuilderMap,
+}
+
+impl BuilderChain {
+    pub fn new(new_depth: i32) -> BuilderChain {
+        BuilderChain {
+            starter: None,
+            builders: Vec::new(),
+            build_data: BuilderMap {
+                spawn_list: Vec::new(),
+                map: Map::new(new_depth),
+                starting_position: None,
+                rooms: None,
+                history: Vec::new(),
+            }
+        }
+    }
+
+    /// Sets the initial map builder. Panics if starter is already set,
+    /// as it only makes sense to have on initial map builder.
+    pub fn start_with(&mut self, starter: Box<dyn InitialMapBuilder>) {
+        match self.starter {
+            None => self.starter = Some(starter),
+            Some(_) => panic!("You can only have one starting builder!")
+        };
+    }
+
+    /// Add a meta builder to the queue
+    pub fn with(&mut self, metabuilder: Box<dyn MetaMapBuilder>) {
+        self.builders.push(metabuilder);
+    }
+
+    /// Build the map, by calling the initial builder, and then
+    /// the metabuilders in order
+    pub fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator) {
+        match &mut self.starter {
+            None => panic!("Cannot run a map builder chain without a starting build system!"),
+            Some(starter) => {
+                // Build the starting map
+                starter.build_map(rng, &mut self.build_data);
+            }
+        }
+
+        // Build additional layers in turn
+        for metabuilder in self.builders.iter_mut() {
+            metabuilder.build_map(rng, &mut self.build_data);
+        }
+    }
+
+    pub fn spawn_entities(&mut self, ecs: &mut World) {
+        for entity in self.build_data.spawn_list.iter() {
             spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
         }
     }
 }
 
-pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
-    // randomly choose a type of map to build
-    // /*
-    let mut rng = rltk::RandomNumberGenerator::new();
+/// Builder which generates an initial map
+pub trait InitialMapBuilder {
+    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap);
+}
+
+/// Builder which takes an existing map, and modifies it in some way
+pub trait MetaMapBuilder {
+    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap);
+}
+
+/// Chooses a random initial map generation algorithm.
+/// # Returns
+/// (builder: Box\<dyn InitialMapBuilder\>, has_rooms: bool)
+fn random_initial_builder(rng: &mut rltk::RandomNumberGenerator) -> (Box<dyn InitialMapBuilder>, bool) {
     let builder = rng.roll_dice(1, 17);
-    let mut result: Box<dyn MapBuilder>;
+    let result: (Box<dyn InitialMapBuilder>, bool);
     match builder {
-        1 => { result = Box::new(BspDungeonBuilder::new(new_depth)); }
-        2 => { result = Box::new(BspInteriorBuilder::new(new_depth)); }
-        3 => { result = Box::new(CellularAutomataBuilder::new(new_depth)); }
-        4 => { result = Box::new(DrunkardsWalkBuilder::open_area(new_depth)); }
-        5 => { result = Box::new(DrunkardsWalkBuilder::open_halls(new_depth)); }
-        6 => { result = Box::new(DrunkardsWalkBuilder::winding_passages(new_depth)); }
-        7 => { result = Box::new(MazeBuilder::new(new_depth)); }
-        8 => { result = Box::new(DLABuilder::walk_inwards(new_depth)); }
-        9 => { result = Box::new(DLABuilder::walk_outwards(new_depth)); }
-        10 => { result = Box::new(DLABuilder::central_attractor(new_depth)); }
-        11 => { result = Box::new(DLABuilder::insectoid(new_depth)); }
-        12 => { result = Box::new(DrunkardsWalkBuilder::fat_passages(new_depth)); }
-        13 => { result = Box::new(DrunkardsWalkBuilder::fearful_symmetry(new_depth)); }
-        14 => { result = Box::new(VoronoiBuilder::pythagoras(new_depth)); }
-        15 => { result = Box::new(VoronoiBuilder::manhattan(new_depth)); }
-        16 => { result = Box::new(VoronoiBuilder::chebyshev(new_depth)); }
-        _ => { result = Box::new(SimpleMapBuilder::new(new_depth)); }
+        1 => result = (BspDungeonBuilder::new(), true),
+        2 => result = (BspInteriorBuilder::new(), true),
+        3 => result = (CellularAutomataBuilder::new(), false),
+        4 => result = (DrunkardsWalkBuilder::open_area(), false),
+        5 => result = (DrunkardsWalkBuilder::open_halls(), false),
+        6 => result = (DrunkardsWalkBuilder::winding_passages(), false),
+        7 => result = (DrunkardsWalkBuilder::fat_passages(), false),
+        8 => result = (DrunkardsWalkBuilder::fearful_symmetry(), false),
+        9 => result = (MazeBuilder::new(), false),
+        10 => result = (DLABuilder::walk_inwards(), false),
+        11 => result = (DLABuilder::walk_outwards(), false),
+        12 => result = (DLABuilder::central_attractor(), false),
+        13 => result = (DLABuilder::insectoid(), false),
+        14 => result = (VoronoiCellBuilder::pythagoras(), false),
+        15 => result = (VoronoiCellBuilder::manhattan(), false),
+        16 => result = (PrefabBuilder::constant(prefab_builder::prefab_levels::WFC_POPULATED), false),
+        _ => result = (SimpleMapBuilder::new(), true)
+    }
+    result
+}
+
+/// Randomly generate a map
+pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
+    let mut builder = BuilderChain::new(new_depth);
+    let (random_starter, has_rooms) = random_initial_builder(rng);
+    builder.start_with(random_starter);
+    if has_rooms {
+        builder.with(RoomBasedSpawner::new());
+        builder.with(RoomBasedStairs::new());
+        builder.with(RoomBasedStartingPosition::new());
+    } else {
+        builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
+        builder.with(CullUnreachable::new());
+        builder.with(VoronoiSpawning::new());
+        builder.with(DistantExit::new());
     }
 
     if rng.roll_dice(1, 3) == 1 {
-        result = Box::new(WaveformCollapseBuilder::derived_map(new_depth, result));
+        // 1/3 chance of running through WFC algorithm
+        builder.with(WaveformCollapseBuilder::new());
     }
 
     if rng.roll_dice(1, 20) == 1 {
-        result = Box::new(PrefabBuilder::Sectional(new_depth, prefab_builder::prefab_sections::UNDERGROUND_FORT, result));
+        // 1/20 chance of an underground fort
+        builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
     }
 
-    result = Box::new(PrefabBuilder::vaults(new_depth, result));
+    // Apply room vaults
+    builder.with(PrefabBuilder::vaults());
 
-    result
-    // */
-
+    builder
 }
