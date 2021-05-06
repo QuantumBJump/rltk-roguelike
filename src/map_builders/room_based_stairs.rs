@@ -10,6 +10,7 @@ impl MetaMapBuilder for RoomBasedStairs {
 }
 
 impl RoomBasedStairs {
+    #[allow(dead_code)]
     pub fn new() -> Box<RoomBasedStairs> {
         Box::new(RoomBasedStairs{})
     }

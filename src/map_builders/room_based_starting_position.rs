@@ -10,6 +10,7 @@ impl MetaMapBuilder for RoomBasedStartingPosition {
 }
 
 impl RoomBasedStartingPosition {
+    #[allow(dead_code)]
     pub fn new() -> Box<RoomBasedStartingPosition> {
         Box::new(RoomBasedStartingPosition{})
     }

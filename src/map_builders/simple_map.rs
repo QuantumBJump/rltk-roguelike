@@ -13,6 +13,7 @@ impl InitialMapBuilder for SimpleMapBuilder {
 }
 
 impl SimpleMapBuilder {
+    #[allow(dead_code)]
     pub fn new() -> Box<SimpleMapBuilder> {
         Box::new(SimpleMapBuilder{})
     }

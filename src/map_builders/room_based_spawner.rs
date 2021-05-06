@@ -10,6 +10,7 @@ impl MetaMapBuilder for RoomBasedSpawner {
 }
 
 impl RoomBasedSpawner {
+    #[allow(dead_code)]
     pub fn new() -> Box<RoomBasedSpawner> {
         Box::new(RoomBasedSpawner{})
     }
