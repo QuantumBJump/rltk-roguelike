@@ -10,6 +10,10 @@
         * Large, open hallways
         * Tighter, more winding caves
     * Labyrinth
+    * Diffusion Limited Aggregation
+    * Hive maps
+    * Added prefabs
+* Refactored map gen code to be more composable
 
 # v0.2.0
 ## Features

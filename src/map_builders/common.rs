@@ -1,6 +1,5 @@
 use super::{Map, Rect, TileType };
 use std::cmp::{max, min};
-use std::collections::HashMap;
 
 pub fn apply_room_to_map(map: &mut Map, room: &Rect) {
     for y in room.y1 + 1 ..= room.y2 {
@@ -47,31 +46,6 @@ pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32) {
         let idx = map.xy_idx(x, y);
         map.tiles[idx] = TileType::Floor;
     }
-}
-
-/// Gets the most distant tile reachable from the start position of the map.
-/// Optionally culls areas of the map which are unreachable from the start location
-pub fn get_most_distant_area(map: &mut Map, start_idx: usize, remove_unreachable: bool) -> usize {
-    map.populate_blocked();
-    let map_starts: Vec<usize> = vec![start_idx];
-    let dijkstra_map = rltk::DijkstraMap::new(map.width as usize, map.height as usize, &map_starts, map, 200.0);
-    let mut exit_tile = (0, 0.0f32);
-    for (i, tile) in map.tiles.iter_mut().enumerate() {
-        if *tile == TileType::Floor {
-            let distance_to_start = dijkstra_map.map[i];
-            if distance_to_start == std::f32::MAX {
-                if remove_unreachable {
-                    *tile = TileType::Wall;
-                }
-            } else {
-                if distance_to_start > exit_tile.1 {
-                    exit_tile.0 = i;
-                    exit_tile.1 = distance_to_start;
-                }
-            }
-        }
-    }
-    exit_tile.0
 }
 
 #[derive(PartialEq, Copy, Clone)]
