@@ -156,7 +156,6 @@ pub fn patterns_to_constraints(patterns: Vec<Vec<TileType>>, chunk_size: i32) ->
         if n_exits == 0 {
             new_chunk.has_exits = false;
         }
-
         constraints.push(new_chunk);
     }
 

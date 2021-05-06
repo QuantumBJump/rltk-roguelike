@@ -165,7 +165,7 @@ impl<'a> Grid<'a> {
                     }
                 }
             }
-            if i % 10 == 0 {
+            if i % 15 == 0 {
                 self.copy_to_map(&mut build_data.map);
                 build_data.take_snapshot();
             }
