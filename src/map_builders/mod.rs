@@ -18,7 +18,7 @@ use dla::*;
 mod common;
 use common::*;
 mod voronoi;
-use voronoi::VoronoiBuilder;
+use voronoi::VoronoiCellBuilder;
 mod prefab_builder;
 use prefab_builder::*;
 
@@ -158,7 +158,7 @@ pub trait MapBuilder {
 
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
-    builder.start_with(MazeBuilder::new());
+    builder.start_with(VoronoiCellBuilder::new());
     builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
     builder.with(VoronoiSpawning::new());
