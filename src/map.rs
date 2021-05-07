@@ -22,6 +22,7 @@ pub struct Map {
     pub blocked: Vec<bool>,
     pub depth: i32,
     pub bloodstains: HashSet<usize>,
+    pub view_blocked: HashSet<usize>,
 
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -62,6 +63,7 @@ impl Map {
             tile_content: vec![Vec::new(); MAPCOUNT],
             depth: new_depth,
             bloodstains: HashSet::new(),
+            view_blocked: HashSet::new(),
         }
     }
 }
@@ -74,7 +76,7 @@ impl Algorithm2D for Map {
 
 impl BaseMap for Map {
     fn is_opaque(&self, idx:usize) -> bool {
-        self.tiles[idx] == TileType::Wall
+        self.tiles[idx] == TileType::Wall || self.view_blocked.contains(&idx)
     }
 
     fn get_pathing_distance(&self, idx1:usize, idx2:usize) -> f32 {

@@ -47,6 +47,8 @@ mod room_corridor_spawner;
 use room_corridor_spawner::CorridorSpawner;
 mod room_sorter;
 use room_sorter::*;
+mod door_placement;
+use door_placement::DoorPlacement;
 
 // Non-room-based meta builders
 mod area_starting_points;
@@ -214,6 +216,12 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
             _ => builder.with(BspCorridors::new()),
         }
 
+        // Don't try to spawn in corridors for BSP interiors
+        let cspawn_roll = rng.roll_dice(1, 2);
+        if cspawn_roll == 1 {
+            builder.with(CorridorSpawner::new());
+        }
+
         // Likewise, don't erode BSP interior - there isn't enough space.
         let modifier_roll = rng.roll_dice(1, 6);
         match modifier_roll {
@@ -221,11 +229,6 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
             2 => builder.with(RoomCornerRounder::new()),
             _ => {}
         }
-    }
-
-    let cspawn_roll = rng.roll_dice(1, 2);
-    if cspawn_roll == 1 {
-        builder.with(CorridorSpawner::new());
     }
 
     let start_roll = rng.roll_dice(1, 2);
@@ -307,7 +310,9 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
         builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
     }
 
+    builder.with(DoorPlacement::new());
     builder.with(PrefabBuilder::vaults());
     // */
+
     builder
 }

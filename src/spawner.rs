@@ -7,6 +7,7 @@ use super::{
     random_table::RandomTable, Equippable, EquipmentSlot, MeleePowerBonus,
     DefenseBonus, HungerClock, HungerState, ProvidesFood, MagicMapper, Hidden,
     EntryTrigger, SingleActivation, RemembersPlayer, Map, TileType,
+    BlocksVisibility, Door,
 };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -361,6 +362,9 @@ fn door(ecs: &mut World, x: i32, y: i32) {
             render_order: 2,
         })
         .with(Name{ name: "Door".to_string() })
+        .with(BlocksTile{})
+        .with(BlocksVisibility{})
+        .with(Door{open: false})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

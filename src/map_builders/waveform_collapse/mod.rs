@@ -31,6 +31,10 @@ impl WaveformCollapseBuilder {
         // Size of a chunk
         const CHUNK_SIZE: i32 = 5;
         build_data.take_snapshot();
+        // Remove the stairs so they don't get added as part of WFC
+        for t in build_data.map.tiles.iter_mut() {
+            if *t == TileType::DownStairs { *t = TileType::Floor; }
+        }
 
         let patterns = build_patterns(&build_data.map, CHUNK_SIZE, true, true);
         let constraints = patterns_to_constraints(patterns, CHUNK_SIZE);

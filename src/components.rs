@@ -56,6 +56,9 @@ pub struct Monster {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct BlocksVisibility {}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct RemembersPlayer {
     // How long the enemy will continue to pursue the player after losing sight.
@@ -196,7 +199,7 @@ pub struct WantsToRemoveItem {
     pub item: Entity,
 }
 
-// Hazards
+// Terrain
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Hidden {}
@@ -206,3 +209,8 @@ pub struct EntryTrigger{}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct SingleActivation {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Door {
+    pub open: bool
+}

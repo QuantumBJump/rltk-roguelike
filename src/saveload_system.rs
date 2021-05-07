@@ -42,7 +42,7 @@ pub fn save_game(ecs: &mut World) {
             SerializationHelper, Equippable, Equipped, MeleePowerBonus,
             DefenseBonus, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
-            SingleActivation, RemembersPlayer
+            SingleActivation, RemembersPlayer, BlocksVisibility, Door
         );
     }
 }
@@ -92,7 +92,7 @@ pub fn load_game(ecs: &mut World) {
             SerializationHelper, Equippable, Equipped, MeleePowerBonus,
             DefenseBonus, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
-            SingleActivation, RemembersPlayer
+            SingleActivation, RemembersPlayer, BlocksVisibility, Door
         );
     }
 
