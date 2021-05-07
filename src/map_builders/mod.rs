@@ -39,6 +39,12 @@ mod rooms_corridors_dogleg;
 use rooms_corridors_dogleg::DoglegCorridors;
 mod rooms_corridors_bsp;
 use rooms_corridors_bsp::BspCorridors;
+mod rooms_corridors_nearest;
+use rooms_corridors_nearest::NearestCorridors;
+mod rooms_corridors_lines;
+use rooms_corridors_lines::StraightLineCorridors;
+mod room_corridor_spawner;
+use room_corridor_spawner::CorridorSpawner;
 mod room_sorter;
 use room_sorter::*;
 
@@ -63,6 +69,7 @@ pub struct BuilderMap {
     /// Which tile the player starts at
     pub starting_position: Option<Position>,
     pub rooms: Option<Vec<Rect>>,
+    pub corridors: Option<Vec<Vec<usize>>>,
     pub history: Vec<Map>,
 }
 
@@ -98,6 +105,7 @@ impl BuilderChain {
                 map: Map::new(new_depth),
                 starting_position: None,
                 rooms: None,
+                corridors: None,
                 history: Vec::new(),
             }
         }
@@ -198,9 +206,11 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
 
     if build_roll != 3 {
         // Don't generate corridors for BSP interior; it still does that itself
-        let corridor_roll = rng.roll_dice(1, 2);
+        let corridor_roll = rng.roll_dice(1, 4);
         match corridor_roll {
             1 => builder.with(DoglegCorridors::new()),
+            2 => builder.with(NearestCorridors::new()),
+            3 => builder.with(StraightLineCorridors::new()),
             _ => builder.with(BspCorridors::new()),
         }
 
@@ -211,6 +221,11 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
             2 => builder.with(RoomCornerRounder::new()),
             _ => {}
         }
+    }
+
+    let cspawn_roll = rng.roll_dice(1, 2);
+    if cspawn_roll == 1 {
+        builder.with(CorridorSpawner::new());
     }
 
     let start_roll = rng.roll_dice(1, 2);
