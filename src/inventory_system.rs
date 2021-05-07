@@ -76,6 +76,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
+            let mut used_item = true;
             let mut _used_item = true;
 
             // Targeting
@@ -191,28 +192,31 @@ impl<'a> System<'a> for ItemUseSystem {
             match item_damages {
                 None => {}
                 Some(damage) => {
-                    _used_item = false;
+                    used_item = false;
                     for mob in targets.iter() {
-                        SufferDamage::new_damage(&mut suffer_damage, *mob, damage.damage);
-                        if entity == *player_entity {
-                            let mob_name = names.get(*mob).unwrap();
-                            let item_name = names.get(useitem.item).unwrap();
-                            gamelog.entries.push(format!("You use {} on {}, inflicting {} damage.", item_name.name, mob_name.name, damage.damage));
+                        let damagable = combat_stats.get(*mob);
+                        if let Some(_damagable) = damagable {
+                            SufferDamage::new_damage(&mut suffer_damage, *mob, damage.damage);
+                            if entity == *player_entity {
+                                let mob_name = names.get(*mob).unwrap();
+                                let item_name = names.get(useitem.item).unwrap();
+                                gamelog.entries.push(format!("You use {} on {}, inflicting {} damage.", item_name.name, mob_name.name, damage.damage));
 
-                            let pos = positions.get(*mob);
-                            if let Some(pos) = pos {
-                                particle_builder.request(
-                                    pos.x,
-                                    pos.y,
-                                    rltk::RGB::named(rltk::RED),
-                                    rltk::RGB::named(rltk::BLACK),
-                                    rltk::to_cp437('‼'),
-                                    200.0
-                                );
+                                let pos = positions.get(*mob);
+                                if let Some(pos) = pos {
+                                    particle_builder.request(
+                                        pos.x,
+                                        pos.y,
+                                        rltk::RGB::named(rltk::RED),
+                                        rltk::RGB::named(rltk::BLACK),
+                                        rltk::to_cp437('‼'),
+                                        200.0
+                                    );
+                                }
                             }
-                        }
 
-                        _used_item = true;
+                            used_item = true;
+                        }
                     }
                 }
             }
@@ -248,7 +252,9 @@ impl<'a> System<'a> for ItemUseSystem {
             match consumable {
                 None => {}
                 Some(_) => {
-                    entities.delete(useitem.item).expect("Delete failed!");
+                    if used_item {
+                        entities.delete(useitem.item).expect("Delete failed!");
+                    }
                 }
             }
         }

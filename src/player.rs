@@ -1,8 +1,10 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use super::{
-    Position, Player, State, Map, Viewshed, RunState, CombatStats, WantsToMelee, Item, gamelog::GameLog,
-    WantsToPickupItem, TileType, Monster, HungerClock, HungerState, EntityMoved,
+    Position, Player, State, Map, Viewshed, RunState, CombatStats,
+    WantsToMelee, Item, gamelog::GameLog, WantsToPickupItem, TileType, Monster,
+    HungerClock, HungerState, EntityMoved, Door, BlocksVisibility, BlocksTile,
+    Renderable
 };
 use std::cmp::{min, max};
 
@@ -15,6 +17,10 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let map = ecs.fetch::<Map>();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
     let mut entity_moved = ecs.write_storage::<EntityMoved>();
+    let mut doors = ecs.write_storage::<Door>();
+    let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
+    let mut blocks_movement = ecs.write_storage::<BlocksTile>();
+    let mut renderables = ecs.write_storage::<Renderable>();
 
     for (entity, _player, pos, viewshed) in (&entities, &players, &mut positions, &mut viewsheds).join() {
         // Don't let player move out of bounds.
@@ -27,6 +33,15 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             if let Some(_target) = target {
                 wants_to_melee.insert(entity, WantsToMelee{ target: *potential_target }).expect("Add target failed.");
                 return; // Don't move after attacking.
+            }
+            let door = doors.get_mut(*potential_target);
+            if let Some(door) = door {
+                door.open = true;
+                blocks_visibility.remove(*potential_target);
+                blocks_movement.remove(*potential_target);
+                let glyph = renderables.get_mut(*potential_target).unwrap();
+                glyph.glyph = rltk::to_cp437('/');
+                viewshed.dirty = true;
             }
         }
         if !map.blocked[destination_idx] {
