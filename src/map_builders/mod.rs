@@ -41,6 +41,8 @@ mod rooms_corridors_bsp;
 use rooms_corridors_bsp::BspCorridors;
 mod rooms_corridors_nearest;
 use rooms_corridors_nearest::NearestCorridors;
+mod rooms_corridors_lines;
+use rooms_corridors_lines::StraightLineCorridors;
 mod room_sorter;
 use room_sorter::*;
 
@@ -299,7 +301,7 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
     builder.start_with(SimpleMapBuilder::new());
     builder.with(RoomDrawer::new());
     builder.with(RoomSorter::new(RoomSort::LEFTMOST));
-    builder.with(NearestCorridors::new());
+    builder.with(StraightLineCorridors::new());
     builder.with(RoomBasedSpawner::new());
     builder.with(RoomBasedStairs::new());
     builder.with(RoomBasedStartingPosition::new());
