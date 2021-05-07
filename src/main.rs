@@ -473,7 +473,7 @@ fn main() -> rltk::BError {
         mapgen_index: 0,
         mapgen_history: Vec::new(),
         mapgen_timer: 0.0,
-        mouse_targetting: true,
+        mouse_targetting: false,
     };
     // Component registration
     gs.ecs.register::<Position>();
@@ -513,6 +513,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<EntityMoved>();
     gs.ecs.register::<SingleActivation>();
     gs.ecs.register::<RemembersPlayer>();
+    gs.ecs.register::<BlocksVisibility>();
+    gs.ecs.register::<Door>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
