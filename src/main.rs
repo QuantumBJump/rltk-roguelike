@@ -12,6 +12,7 @@ pub use player::*;
 mod rect;
 pub use rect::Rect;
 mod rex_assets;
+pub mod camera;
 
 mod visibility_system;
 use visibility_system::VisibilitySystem;
@@ -40,7 +41,7 @@ mod trigger_system;
 pub mod map_builders;
 
 // Constants
-const SHOW_MAPGEN_VISUALISER: bool = true;
+const SHOW_MAPGEN_VISUALISER: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -53,7 +54,6 @@ pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventor
     MagicMapReveal{ row: i32 },
     MapGeneration,
     Wait,
-    FreeTarget{ target: Option<(i32, i32)>},
 }
 
 pub struct State{
@@ -62,7 +62,6 @@ pub struct State{
     mapgen_history: Vec<Map>,
     mapgen_index: usize,
     mapgen_timer: f32,
-    mouse_targetting: bool,
 }
 
 impl State {
@@ -120,27 +119,30 @@ impl GameState for State {
         match newrunstate {
             // Only draw the map/entities/gui if we're not in the main menu
             RunState::MainMenu{..} => {}
+            RunState::GameOver{..} => {}
             _ => {
-                // Draw map
-                draw_map(&self.ecs.fetch::<Map>(), ctx);
-                // Draw entities
-                {
-                    let positions = self.ecs.read_storage::<Position>();
-                    let renderables = self.ecs.read_storage::<Renderable>();
-                    let hidden = self.ecs.read_storage::<Hidden>();
-                    let map = self.ecs.fetch::<Map>();
+                camera::render_camera(&self.ecs, ctx);
+                gui::draw_ui(&self.ecs, ctx);
+                // // Draw map
+                // draw_map(&self.ecs.fetch::<Map>(), ctx);
+                // // Draw entities
+                // {
+                //     let positions = self.ecs.read_storage::<Position>();
+                //     let renderables = self.ecs.read_storage::<Renderable>();
+                //     let hidden = self.ecs.read_storage::<Hidden>();
+                //     let map = self.ecs.fetch::<Map>();
 
-                    let mut data = (&positions, &renderables, !&hidden).join().collect::<Vec<_>>();
-                    data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                    for (pos, render, _hidden) in data.iter() {
-                        let idx = map.xy_idx(pos.x, pos.y);
-                        if map.visible_tiles[idx] {
-                            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
-                        }
-                    }
+                //     let mut data = (&positions, &renderables, !&hidden).join().collect::<Vec<_>>();
+                //     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
+                //     for (pos, render, _hidden) in data.iter() {
+                //         let idx = map.xy_idx(pos.x, pos.y);
+                //         if map.visible_tiles[idx] {
+                //             ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+                //         }
+                //     }
 
-                    gui::draw_ui(&self.ecs, ctx);
-                }
+                //     gui::draw_ui(&self.ecs, ctx);
+                // }
             }
         }
 
@@ -258,18 +260,6 @@ impl GameState for State {
                         let mut intent = self.ecs.write_storage::<WantsToUseItem>();
                         intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseItem{ item, target: result.1 }).expect("Unable to insert intent!");
                         newrunstate = RunState::PlayerTurn;
-                    }
-                }
-            }
-            RunState::FreeTarget{target} => {
-                let result = gui::free_target(self, ctx, target);
-                match result {
-                    gui::FreeTargetSelection::Cancel => {
-                        newrunstate = RunState::AwaitingInput;
-                    },
-                    gui::FreeTargetSelection::NoResponse => {},
-                    gui::FreeTargetSelection::Move{x, y} => {
-                        newrunstate = RunState::FreeTarget{target: Some((x, y))};
                     }
                 }
             }
@@ -473,7 +463,6 @@ fn main() -> rltk::BError {
         mapgen_index: 0,
         mapgen_history: Vec::new(),
         mapgen_timer: 0.0,
-        mouse_targetting: false,
     };
     // Component registration
     gs.ecs.register::<Position>();
