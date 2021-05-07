@@ -302,6 +302,7 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
         builder.with(CullUnreachable::new());
         let (x_start, y_start) = random_start_position(rng);
         builder.with(AreaStartingPosition::new(x_start, y_start));
+        // Set up an exit & spawn mobs
         builder.with(VoronoiSpawning::new());
         builder.with(DistantExit::new());
     }

@@ -14,6 +14,7 @@
     * Hive maps
     * Added prefabs
 * Refactored map gen code to be more composable
+* Added doors
 
 # v0.2.0
 ## Features
