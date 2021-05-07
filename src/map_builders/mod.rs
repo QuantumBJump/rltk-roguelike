@@ -194,6 +194,8 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
         }
     }
 
+    builder.with(RoomDrawer::new());
+
     if build_roll != 3 {
         // Don't generate corridors for BSP interior; it still does that itself
         let corridor_roll = rng.roll_dice(1, 2);
@@ -268,7 +270,7 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 /// Randomly generate a map
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
-    /*
+    // /*
     let type_roll = rng.roll_dice(1, 2);
     match type_roll {
         1 => random_room_builder(rng, &mut builder),
@@ -291,14 +293,6 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
     }
 
     builder.with(PrefabBuilder::vaults());
-    */
-
-    builder.start_with(SimpleMapBuilder::new());
-    builder.with(RoomDrawer::new());
-    builder.with(RoomSorter::new(RoomSort::LEFTMOST));
-    builder.with(BspCorridors::new());
-    builder.with(RoomBasedSpawner::new());
-    builder.with(RoomBasedStairs::new());
-    builder.with(RoomBasedStartingPosition::new());
+    // */
     builder
 }
