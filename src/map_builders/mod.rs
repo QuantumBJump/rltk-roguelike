@@ -22,13 +22,17 @@ use voronoi::VoronoiCellBuilder;
 mod prefab_builder;
 use prefab_builder::*;
 
+// Room-based meta builders
 mod room_based_spawner;
 use room_based_spawner::RoomBasedSpawner;
 mod room_based_starting_position;
 use room_based_starting_position::RoomBasedStartingPosition;
 mod room_based_stairs;
 use room_based_stairs::RoomBasedStairs;
+mod room_exploder;
+use room_exploder::RoomExploder;
 
+// Non-room-based meta builders
 mod area_starting_points;
 use area_starting_points::*;
 mod voronoi_spawning;
@@ -169,7 +173,7 @@ fn random_initial_builder(rng: &mut rltk::RandomNumberGenerator) -> (Box<dyn Ini
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
     builder.start_with(SimpleMapBuilder::new());
-    builder.with(DLABuilder::heavy_erosion());
+    builder.with(RoomExploder::new());
     builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
     builder.with(VoronoiSpawning::new());
