@@ -40,7 +40,7 @@ mod trigger_system;
 pub mod map_builders;
 
 // Constants
-const SHOW_MAPGEN_VISUALISER: bool = false;
+const SHOW_MAPGEN_VISUALISER: bool = true;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,

@@ -1,7 +1,7 @@
 /// A sewer-like level with one main, winding path with several offshoots.
 use super::{
-    InitialMapBuilder, BuilderMap, Map, Rect, 
-    TileType, apply_room_to_map, draw_corridor
+    InitialMapBuilder, BuilderMap, Rect, 
+    TileType,
 };
 use rltk::RandomNumberGenerator;
 
@@ -39,29 +39,14 @@ impl BspDungeonBuilder {
             let rect = self.get_random_rect(rng);
             let candidate = self.get_random_sub_rect(rect, rng);
 
-            if self.is_possible(candidate, &build_data.map) {
-                apply_room_to_map(&mut build_data.map, &candidate);
+            if self.is_possible(candidate, &build_data, &rooms) {
                 rooms.push(candidate);
                 self.add_subrects(rect);
-                build_data.take_snapshot();
             }
 
             n_rooms += 1;
         }
 
-        // Add in corridors
-        rooms.sort_by(|a,b| a.x1.cmp(&b.x1) );
-
-        for i in 0..rooms.len()-1 {
-            let room = rooms[i];
-            let next_room = rooms[i+1];
-            let start_x = room.x1 + (rng.roll_dice(1, i32::abs(room.x1 - room.x2))-1);
-            let start_y = room.y1 + (rng.roll_dice(1, i32::abs(room.y1 - room.y2))-1);
-            let end_x = next_room.x1 + (rng.roll_dice(1, i32::abs(next_room.x1 - next_room.x2))-1);
-            let end_y = next_room.y1 + (rng.roll_dice(1, i32::abs(next_room.y1 - next_room.y2))-1);
-            draw_corridor(&mut build_data.map, start_x, start_y, end_x, end_y);
-            build_data.take_snapshot();
-        }
         build_data.rooms = Some(rooms);
     }
 
@@ -100,7 +85,7 @@ impl BspDungeonBuilder {
         result
     }
 
-    fn is_possible(&self, rect: Rect, map: &Map) -> bool {
+    fn is_possible(&self, rect: Rect, build_data: &BuilderMap, rooms: &Vec<Rect>) -> bool {
         let mut expanded = rect;
         expanded.x1 -= 2;
         expanded.x2 += 2;
@@ -108,17 +93,21 @@ impl BspDungeonBuilder {
         expanded.y2 += 2;
 
         let mut can_build = true;
-        
+
+        for r in rooms.iter() {
+            if r.intersect(&rect) { can_build = false; }
+        }
+
         for y in expanded.y1 ..= expanded.y2 {
             for x in expanded.x1 ..= expanded.x2 {
-                if x > map.width - 2 { can_build = false; }
-                if y > map.height - 2 { can_build = false; }
+                if x > build_data.map.width - 2 { can_build = false; }
+                if y > build_data.map.height - 2 { can_build = false; }
                 if x < 1 { can_build = false; }
                 if y < 1 { can_build = false; }
 
                 if can_build {
-                    let idx = map.xy_idx(x, y);
-                    if map.tiles[idx] != TileType::Wall {
+                    let idx = build_data.map.xy_idx(x, y);
+                    if build_data.map.tiles[idx] != TileType::Wall {
                         can_build = false;
                     }
                 }
