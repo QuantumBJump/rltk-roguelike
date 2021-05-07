@@ -39,6 +39,8 @@ mod rooms_corridors_dogleg;
 use rooms_corridors_dogleg::DoglegCorridors;
 mod rooms_corridors_bsp;
 use rooms_corridors_bsp::BspCorridors;
+mod rooms_corridors_nearest;
+use rooms_corridors_nearest::NearestCorridors;
 mod room_sorter;
 use room_sorter::*;
 
@@ -270,7 +272,7 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 /// Randomly generate a map
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
-    // /*
+    /*
     let type_roll = rng.roll_dice(1, 2);
     match type_roll {
         1 => random_room_builder(rng, &mut builder),
@@ -293,6 +295,13 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
     }
 
     builder.with(PrefabBuilder::vaults());
-    // */
+    */
+    builder.start_with(SimpleMapBuilder::new());
+    builder.with(RoomDrawer::new());
+    builder.with(RoomSorter::new(RoomSort::LEFTMOST));
+    builder.with(NearestCorridors::new());
+    builder.with(RoomBasedSpawner::new());
+    builder.with(RoomBasedStairs::new());
+    builder.with(RoomBasedStartingPosition::new());
     builder
 }
