@@ -31,6 +31,8 @@ mod room_based_stairs;
 use room_based_stairs::RoomBasedStairs;
 mod room_exploder;
 use room_exploder::RoomExploder;
+mod room_corner_rounding;
+use room_corner_rounding::RoomCornerRounder;
 
 // Non-room-based meta builders
 mod area_starting_points;
@@ -173,7 +175,7 @@ fn random_initial_builder(rng: &mut rltk::RandomNumberGenerator) -> (Box<dyn Ini
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
     builder.start_with(SimpleMapBuilder::new());
-    builder.with(RoomExploder::new());
+    builder.with(RoomCornerRounder::new());
     builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
     builder.with(VoronoiSpawning::new());
