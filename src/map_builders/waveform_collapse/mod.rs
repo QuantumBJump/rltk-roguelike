@@ -45,6 +45,7 @@ impl WaveformCollapseBuilder {
             build_data.take_snapshot();
             if solver.possible { break; } // If it has hit an impossible condition, try again.
         }
+        build_data.spawn_list.clear();
     }
 
     fn render_tile_gallery(&mut self, constraints: &[MapChunk], chunk_size: i32, build_data: &mut BuilderMap) {
