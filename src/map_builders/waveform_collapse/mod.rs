@@ -22,6 +22,7 @@ impl WaveformCollapseBuilder {
     /// # Arguments
     /// * new_depth - the new map depth
     /// * derive_from - either None, or a boxed MapBuilder, as output by `random_builder`
+    #[allow(dead_code)]
     pub fn new() -> Box<WaveformCollapseBuilder> {
         Box::new(WaveformCollapseBuilder {})
     }
@@ -44,6 +45,7 @@ impl WaveformCollapseBuilder {
             build_data.take_snapshot();
             if solver.possible { break; } // If it has hit an impossible condition, try again.
         }
+        build_data.spawn_list.clear();
     }
 
     fn render_tile_gallery(&mut self, constraints: &[MapChunk], chunk_size: i32, build_data: &mut BuilderMap) {
