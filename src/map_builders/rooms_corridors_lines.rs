@@ -24,6 +24,7 @@ impl StraightLineCorridors {
         }
 
         let mut connected: HashSet<usize> = HashSet::new();
+        let mut corridors: Vec<Vec<usize>> = Vec::new();
         for (i, room) in rooms.iter().enumerate() {
             let mut room_distance: Vec<(usize, f32)> = Vec::new();
             let room_center = room.center();
@@ -48,13 +49,20 @@ impl StraightLineCorridors {
                     room_center_pt,
                     rltk::Point::new(dest_center.0, dest_center.1)
                 );
+                let mut corridor = Vec::new();
                 for cell in line.iter() {
                     let idx = build_data.map.xy_idx(cell.x, cell.y);
+                    if build_data.map.tiles[idx] != TileType::Floor {
+                        build_data.map.tiles[idx] = TileType::Floor;
+                        corridor.push(idx);
+                    }
                     build_data.map.tiles[idx] = TileType::Floor;
                 }
+                corridors.push(corridor);
                 connected.insert(i);
                 build_data.take_snapshot();
             }
         }
+        build_data.corridors = Some(corridors);
     }
 }

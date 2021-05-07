@@ -43,6 +43,8 @@ mod rooms_corridors_nearest;
 use rooms_corridors_nearest::NearestCorridors;
 mod rooms_corridors_lines;
 use rooms_corridors_lines::StraightLineCorridors;
+mod room_corridor_spawner;
+use room_corridor_spawner::CorridorSpawner;
 mod room_sorter;
 use room_sorter::*;
 
@@ -67,6 +69,7 @@ pub struct BuilderMap {
     /// Which tile the player starts at
     pub starting_position: Option<Position>,
     pub rooms: Option<Vec<Rect>>,
+    pub corridors: Option<Vec<Vec<usize>>>,
     pub history: Vec<Map>,
 }
 
@@ -102,6 +105,7 @@ impl BuilderChain {
                 map: Map::new(new_depth),
                 starting_position: None,
                 rooms: None,
+                corridors: None,
                 history: Vec::new(),
             }
         }
@@ -202,9 +206,11 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
 
     if build_roll != 3 {
         // Don't generate corridors for BSP interior; it still does that itself
-        let corridor_roll = rng.roll_dice(1, 2);
+        let corridor_roll = rng.roll_dice(1, 4);
         match corridor_roll {
             1 => builder.with(DoglegCorridors::new()),
+            2 => builder.with(NearestCorridors::new()),
+            3 => builder.with(StraightLineCorridors::new()),
             _ => builder.with(BspCorridors::new()),
         }
 
@@ -215,6 +221,11 @@ fn random_room_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Buil
             2 => builder.with(RoomCornerRounder::new()),
             _ => {}
         }
+    }
+
+    let cspawn_roll = rng.roll_dice(1, 2);
+    if cspawn_roll == 1 {
+        builder.with(CorridorSpawner::new());
     }
 
     let start_roll = rng.roll_dice(1, 2);
@@ -274,7 +285,7 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 /// Randomly generate a map
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
-    /*
+    // /*
     let type_roll = rng.roll_dice(1, 2);
     match type_roll {
         1 => random_room_builder(rng, &mut builder),
@@ -297,13 +308,6 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> 
     }
 
     builder.with(PrefabBuilder::vaults());
-    */
-    builder.start_with(SimpleMapBuilder::new());
-    builder.with(RoomDrawer::new());
-    builder.with(RoomSorter::new(RoomSort::LEFTMOST));
-    builder.with(StraightLineCorridors::new());
-    builder.with(RoomBasedSpawner::new());
-    builder.with(RoomBasedStairs::new());
-    builder.with(RoomBasedStartingPosition::new());
+    // */
     builder
 }
