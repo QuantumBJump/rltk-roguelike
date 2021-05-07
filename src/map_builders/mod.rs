@@ -33,6 +33,12 @@ mod room_exploder;
 use room_exploder::RoomExploder;
 mod room_corner_rounding;
 use room_corner_rounding::RoomCornerRounder;
+mod rooms_corridors_dogleg;
+use rooms_corridors_dogleg::DoglegCorridors;
+mod rooms_corridors_bsp;
+use rooms_corridors_bsp::BspCorridors;
+mod room_sorter;
+use room_sorter::RoomSorter;
 
 // Non-room-based meta builders
 mod area_starting_points;
@@ -174,8 +180,9 @@ fn random_initial_builder(rng: &mut rltk::RandomNumberGenerator) -> (Box<dyn Ini
 /// Randomly generate a map
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth);
-    builder.start_with(SimpleMapBuilder::new());
-    builder.with(RoomCornerRounder::new());
+    builder.start_with(BspDungeonBuilder::new());
+    builder.with(RoomSorter::new(room_sorter::RoomSort::CENTRAL));
+    builder.with(BspCorridors::new());
     builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
     builder.with(VoronoiSpawning::new());
