@@ -70,13 +70,13 @@ pub fn spawn_named_item(raws: &RawMaster, new_entity: EntityBuilder, key: &str, 
                 match effect_name {
                     "provides_healing" => {
                         eb = eb.with(ProvidesHealing{ heal_amount: effect.1.parse::<i32>().unwrap() });
-                    }
-                    "ranged" => {
-                        eb = eb.with(Ranged{ range: effect.1.parse::<i32>().unwrap() });
-                    }
-                    "damage" => {
-                        eb = eb.with(InflictsDamage{ damage: effect.1.parse::<i32>().unwrap() });
-                    }
+                    },
+                    "ranged" => { eb = eb.with(Ranged{ range: effect.1.parse::<i32>().unwrap() })},
+                    "damage" => { eb = eb.with(InflictsDamage{ damage: effect.1.parse::<i32>().unwrap() }) },
+                    "area_of_effect" => { eb = eb.with(AreaOfEffect{ radius: effect.1.parse::<i32>().unwrap() }) },
+                    "stunned" => { eb = eb.with(Stunned{ turns: effect.1.parse::<i32>().unwrap() }) },
+                    "magic_mapping" => { eb = eb.with(MagicMapper{})},
+                    "food" => { eb = eb.with(ProvidesFood{})},
                     _ => {
                         rltk::console::log(format!("Warning: consumable effect {} not implemented.", effect_name));
                     }
