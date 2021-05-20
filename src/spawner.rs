@@ -2,10 +2,10 @@ use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
 use super::{
     CombatStats, Player, Renderable, Name, Position, Viewshed, Monster,
-    BlocksTile, Rect, Item, Consumable,
-    Ranged, InflictsDamage, AreaOfEffect, Stunned, SerializeMe,
-    random_table::RandomTable, Equippable, EquipmentSlot, MeleePowerBonus,
-    DefenseBonus, HungerClock, HungerState, ProvidesFood, MagicMapper, Hidden,
+    BlocksTile, Rect,
+    InflictsDamage, SerializeMe,
+    random_table::RandomTable,
+    HungerClock, HungerState, Hidden,
     EntryTrigger, SingleActivation, RemembersPlayer, Map, TileType,
     BlocksVisibility, Door, raws::*,
 };
@@ -101,10 +101,6 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
     match spawn.1.as_ref() {
         "Goblin" => goblin(ecs, x, y),
         "Orc" => orc(ecs, x, y),
-        "Dagger" => dagger(ecs, x, y),
-        "Shield" => shield(ecs, x, y),
-        "Longsword" => longsword(ecs, x, y),
-        "Tower Shield" => tower_shield(ecs, x, y),
         "Bear Trap" => bear_trap(ecs, x, y),
         "Door" => door(ecs, x, y),
         _ => {}
@@ -119,7 +115,7 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("Stun Scroll", 2 + map_depth)
         .add("Magic Missile Scroll", 4)
         .add("Dagger", 3)
-        .add("Shield", 3)
+        .add("Buckler", 3)
         .add("Longsword", map_depth - 1)
         .add("Tower Shield", map_depth - 1)
         .add("Rations", 10)
@@ -155,75 +151,6 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
             defense: 1,
             power: 4,
         })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-// Equipment
-fn dagger(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position{ x, y })
-        .with(Renderable{
-            glyph: rltk::to_cp437('/'),
-            fg: RGB::named(rltk::CYAN),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name{ name: "Dagger".to_string() })
-        .with(Item{})
-        .with(Equippable{ slot: EquipmentSlot::Melee })
-        .with(MeleePowerBonus{ power: 2 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn shield(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position{ x, y })
-        .with(Renderable{
-            glyph: rltk::to_cp437('('),
-            fg: RGB::named(rltk::CYAN),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name{ name: "Shield".to_string() })
-        .with(Item{})
-        .with(Equippable{ slot: EquipmentSlot::Shield })
-        .with(DefenseBonus{ defense: 1 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn longsword(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position{ x, y })
-        .with(Renderable{
-            glyph: rltk::to_cp437('/'),
-            fg: RGB::named(rltk::YELLOW),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2
-        })
-        .with(Name{ name: "Longsword".to_string() })
-        .with(Item{})
-        .with(Equippable{ slot: EquipmentSlot::Melee })
-        .with(MeleePowerBonus{ power: 4 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn tower_shield(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position{ x, y })
-        .with(Renderable{
-            glyph: rltk::to_cp437('('),
-            fg: RGB::named(rltk::YELLOW),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2
-        })
-        .with(Name{ name: "Tower Shield".to_string() })
-        .with(Item{})
-        .with(Equippable{ slot: EquipmentSlot::Shield })
-        .with(DefenseBonus{ defense: 3 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
