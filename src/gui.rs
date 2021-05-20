@@ -6,8 +6,13 @@ use super::{
     rex_assets::RexAssets, camera
 };
 
+pub const LOG_HEIGHT: i32 = 7;
+
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
-    ctx.draw_box(0, 43, 79, 6, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    let (_x_chars, y_chars) = ctx.get_char_size();
+    let y = y_chars as i32 - LOG_HEIGHT;
+    let h = LOG_HEIGHT - 1;
+    ctx.draw_box(0, y, 79, h, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
 
     // Draw HP bar
     let combat_stats = ecs.read_storage::<CombatStats>();

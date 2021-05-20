@@ -1,20 +1,46 @@
 use specs::prelude::*;
-use super::{Map, TileType, Position, Renderable, Hidden};
+use super::{Map, TileType, Position, Renderable, Hidden, gui};
 use rltk::{Point, Rltk, RGB};
 
 const SHOW_BOUNDARIES: bool = true;
+const CONSTRAIN_CAMERA: bool = true;
 
 pub fn get_screen_bounds(ecs: &World, ctx: &mut Rltk) -> (i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
-    let (x_chars, y_chars) = ctx.get_char_size();
+    let (x_chars, mut y_chars) = ctx.get_char_size();
+    y_chars -= gui::LOG_HEIGHT as u32;
 
     let center_x = (x_chars / 2) as i32;
     let center_y = (y_chars / 2) as i32;
 
-    let min_x = player_pos.x - center_x;
-    let max_x = min_x + x_chars as i32;
-    let min_y = player_pos.y - center_y;
-    let max_y = min_y + y_chars as i32;
+    let mut min_x = player_pos.x - center_x;
+    let mut max_x = min_x + x_chars as i32;
+    let mut min_y = player_pos.y - center_y;
+    let mut max_y = min_y + y_chars as i32;
+
+    if CONSTRAIN_CAMERA {
+        // Don't let the camera stray outside the bounds of the map
+        let map = ecs.fetch::<Map>();
+        if max_x > map.width {
+            let correction = max_x - map.width;
+            min_x -= correction;
+            max_x -= correction;
+        }
+        if max_y > map.height {
+            let correction = max_y - map.height;
+            min_y -= correction;
+            max_y -= correction;
+        }
+        if min_x < 0 {
+            max_x += i32::abs(min_x);
+            min_x = 0;
+        }
+        if min_y < 0 {
+            let correction = i32::abs(min_y);
+            max_y += correction;
+            min_y = 0;
+        }
+    }
 
     (min_x, max_x, min_y, max_y)
 }
