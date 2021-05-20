@@ -12,6 +12,7 @@ pub use player::*;
 mod rect;
 pub use rect::Rect;
 mod rex_assets;
+pub mod camera;
 
 mod visibility_system;
 use visibility_system::VisibilitySystem;
@@ -40,7 +41,7 @@ mod trigger_system;
 pub mod map_builders;
 
 // Constants
-const SHOW_MAPGEN_VISUALISER: bool = true;
+const SHOW_MAPGEN_VISUALISER: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -53,7 +54,6 @@ pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventor
     MagicMapReveal{ row: i32 },
     MapGeneration,
     Wait,
-    FreeTarget{ target: Option<(i32, i32)>},
 }
 
 pub struct State{
@@ -62,7 +62,6 @@ pub struct State{
     mapgen_history: Vec<Map>,
     mapgen_index: usize,
     mapgen_timer: f32,
-    mouse_targetting: bool,
 }
 
 impl State {
@@ -120,27 +119,10 @@ impl GameState for State {
         match newrunstate {
             // Only draw the map/entities/gui if we're not in the main menu
             RunState::MainMenu{..} => {}
+            RunState::GameOver{..} => {}
             _ => {
-                // Draw map
-                draw_map(&self.ecs.fetch::<Map>(), ctx);
-                // Draw entities
-                {
-                    let positions = self.ecs.read_storage::<Position>();
-                    let renderables = self.ecs.read_storage::<Renderable>();
-                    let hidden = self.ecs.read_storage::<Hidden>();
-                    let map = self.ecs.fetch::<Map>();
-
-                    let mut data = (&positions, &renderables, !&hidden).join().collect::<Vec<_>>();
-                    data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                    for (pos, render, _hidden) in data.iter() {
-                        let idx = map.xy_idx(pos.x, pos.y);
-                        if map.visible_tiles[idx] {
-                            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
-                        }
-                    }
-
-                    gui::draw_ui(&self.ecs, ctx);
-                }
+                camera::render_camera(&self.ecs, ctx);
+                gui::draw_ui(&self.ecs, ctx);
             }
         }
 
@@ -154,7 +136,7 @@ impl GameState for State {
             RunState::MapGeneration => {
                 if SHOW_MAPGEN_VISUALISER {
                     ctx.cls();
-                    draw_map(&self.mapgen_history[self.mapgen_index], ctx);
+                    if self.mapgen_index < self.mapgen_history.len() { camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx); }
 
                     self.mapgen_timer += ctx.frame_time_ms;
                     if self.mapgen_timer > 200.0 {
@@ -171,7 +153,7 @@ impl GameState for State {
             }
             RunState::Wait => {
                 ctx.cls();
-                draw_map(&self.mapgen_history[self.mapgen_index-1], ctx);
+                camera::render_debug_map(&self.mapgen_history[self.mapgen_index-1], ctx);
                 match ctx.key {
                     None => {}
                     Some(_) => {
@@ -261,18 +243,6 @@ impl GameState for State {
                     }
                 }
             }
-            RunState::FreeTarget{target} => {
-                let result = gui::free_target(self, ctx, target);
-                match result {
-                    gui::FreeTargetSelection::Cancel => {
-                        newrunstate = RunState::AwaitingInput;
-                    },
-                    gui::FreeTargetSelection::NoResponse => {},
-                    gui::FreeTargetSelection::Move{x, y} => {
-                        newrunstate = RunState::FreeTarget{target: Some((x, y))};
-                    }
-                }
-            }
             RunState::SaveGame => {
                 saveload_system::save_game(&mut self.ecs);
                 newrunstate = RunState::MainMenu{ menu_selection: gui::MainMenuSelection::LoadGame };
@@ -307,11 +277,11 @@ impl GameState for State {
             }
             RunState::MagicMapReveal{row} => {
                 let mut map = self.ecs.fetch_mut::<Map>();
-                for x in 0..MAPWIDTH {
+                for x in 0..map.width {
                     let idx = map.xy_idx(x as i32, row);
                     map.revealed_tiles[idx] = true;
                 }
-                if row as usize == MAPHEIGHT-1 {
+                if row == map.height-1 {
                     newrunstate = RunState::MonsterTurn;
                 } else {
                     newrunstate = RunState::MagicMapReveal{row: row+1 };
@@ -424,7 +394,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
-        let mut builder = map_builders::random_builder(new_depth, &mut rng);
+        let mut builder = map_builders::random_builder(new_depth, &mut rng, 80, 43);
         builder.build_map(&mut rng);
         std::mem::drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -473,7 +443,6 @@ fn main() -> rltk::BError {
         mapgen_index: 0,
         mapgen_history: Vec::new(),
         mapgen_timer: 0.0,
-        mouse_targetting: false,
     };
     // Component registration
     gs.ecs.register::<Position>();
@@ -519,7 +488,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     // Add the map with placeholder values
-    gs.ecs.insert(Map::new(1));
+    gs.ecs.insert(Map::new(1, 64, 64));
     gs.ecs.insert(Point::new(0, 0));
 
     // Seed the rng

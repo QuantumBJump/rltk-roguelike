@@ -1,11 +1,8 @@
-use rltk::{ RGB, Rltk, Point, Algorithm2D, BaseMap};
+use rltk::{ Point, Algorithm2D, BaseMap};
 use std::collections::HashSet;
 use specs::prelude::*;
 use serde::{ Serialize, Deserialize, };
 
-pub const MAPWIDTH: usize = 80;
-pub const MAPHEIGHT: usize = 43;
-pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
@@ -52,15 +49,16 @@ impl Map {
         }
     }
 
-    pub fn new(new_depth: i32) -> Map {
+    pub fn new(new_depth: i32, width: i32, height: i32) -> Map {
+        let map_tile_count = (width*height) as usize;
         Map{
-            tiles: vec![TileType::Wall; MAPCOUNT],
-            width: MAPWIDTH as i32,
-            height: MAPHEIGHT as i32,
-            revealed_tiles: vec![false; MAPCOUNT],
-            visible_tiles: vec![false; MAPCOUNT],
-            blocked: vec![false; MAPCOUNT],
-            tile_content: vec![Vec::new(); MAPCOUNT],
+            tiles: vec![TileType::Wall; map_tile_count],
+            width,
+            height,
+            revealed_tiles: vec![false; map_tile_count],
+            visible_tiles: vec![false; map_tile_count],
+            blocked: vec![false; map_tile_count],
+            tile_content: vec![Vec::new(); map_tile_count],
             depth: new_depth,
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
@@ -106,83 +104,4 @@ impl BaseMap for Map {
 
         exits
     }
-}
-
-fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
-    if x < 0 || x > map.width - 1 || y < 0 || y > map.height - 1 as i32 { return false; }
-    let idx = map.xy_idx(x, y);
-    map.tiles[idx] == TileType::Wall && map.revealed_tiles[idx]
-}
-
-fn wall_glyph(map: &Map, x: i32, y: i32) -> rltk::FontCharType {
-    let mut mask: u8 = 0;
-
-    if is_revealed_and_wall(map, x, y - 1) { mask += 1; }
-    if is_revealed_and_wall(map, x, y + 1) { mask += 2; }
-    if is_revealed_and_wall(map, x - 1, y) { mask += 4; }
-    if is_revealed_and_wall(map, x + 1, y) { mask += 8; }
-
-    match mask {
-        0 => { 9 } // Pillar because can't see neighbours
-        1 => { 186 } // Wall only to the north
-        2 => { 186 } // Wall only to the south
-        3 => { 186 } // Walls to north and south
-        4 => { 205 } // Wall only to the west
-        5 => { 188 } // Walls to north and west
-        6 => { 187 } // Wall to south and west
-        7 => { 185 } // Wall to north, south and west
-        8 => { 205 } // Wall only to east
-        9 => { 200 } // Wall to north and east
-        10 => { 201 } // Wall to east and south
-        11 => { 204 } // Wall to north, east and south
-        12 => { 205 } // Wall to east and west
-        13 => { 202 } // Wall to north, east and west
-        14 => { 203 } // Wall to east, south and west
-        15 => { 206 } // Wall on all sides
-        _ => { 35 } // We missed one?
-    }
-}
-
-pub fn draw_map(map: &Map, ctx: &mut Rltk) {
-    let mut x = 0;
-    let mut y = 0;
-    for (idx, tile) in map.tiles.iter().enumerate() {
-        // Render a tile depending on the tile type.
-        if map.revealed_tiles[idx] {
-            let glyph;
-            let mut fg;
-            let mut bg = RGB::from_f32(0., 0., 0.);
-
-            match tile {
-                TileType::Floor => {
-                    glyph = rltk::to_cp437('.');
-                    fg = RGB::from_f32(0.0, 0.5, 0.5);
-                }
-                TileType::Wall => {
-                    glyph = wall_glyph(&*map, x, y);
-                    fg = RGB::from_f32(0., 0.7, 0.);
-                }
-                TileType::DownStairs => {
-                    glyph = rltk::to_cp437('>');
-                    fg = RGB::from_f32(0., 1.0, 1.0);
-                }
-            }
-
-            if map.bloodstains.contains(&idx) { bg = RGB::from_f32(0.75, 0., 0.); }
-            if !map.visible_tiles[idx] {
-                fg = fg.to_greyscale();
-                bg = RGB::from_f32(0., 0., 0.); // Don't show bloodstains outside visual range
-            }
-            ctx.set(x, y, fg, bg, glyph);
-        }
-
-        // Move the coordinates.
-        x += 1;
-        if x >= map.width {
-            x = 0;
-            y += 1;
-        }
-
-    }
-
 }

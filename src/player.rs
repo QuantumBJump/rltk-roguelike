@@ -45,8 +45,8 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             }
         }
         if !map.blocked[destination_idx] {
-            pos.x = min(79, max(0, pos.x + delta_x));
-            pos.y = min(49, max(0, pos.y + delta_y));
+            pos.x = min(map.width-1, max(0, pos.x + delta_x));
+            pos.y = min(map.height-1, max(0, pos.y + delta_y));
 
             viewshed.dirty = true;
             let mut ppos = ecs.write_resource::<Point>();
@@ -170,9 +170,6 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Down |
             VirtualKeyCode::Numpad2 |
             VirtualKeyCode::J => try_move_player(0, 1, &mut gs.ecs),
-
-            // Target
-            VirtualKeyCode::T => return RunState::FreeTarget{target: None},
 
             // Diagonal movement
             VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
