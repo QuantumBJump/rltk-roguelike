@@ -30,7 +30,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
     for ty in min_y .. max_y {
         let mut x = 0;
         for tx in min_x .. max_x {
-            if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
+            if tx >= 0 && tx <= map_width && ty >= 0 && ty <= map_height {
                 let idx = map.xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
                     let (glyph, fg, bg) = get_tile_glyph(idx, &*map);
@@ -126,4 +126,41 @@ fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
     if x < 0 || x > map.width - 1 || y < 0 || y > map.height - 1 as i32 { return false; }
     let idx = map.xy_idx(x, y);
     map.tiles[idx] == TileType::Wall && map.revealed_tiles[idx]
+}
+
+pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
+    let player_pos = Point::new(map.width / 2, map.height / 2);
+    let (x_chars, y_chars) = ctx.get_char_size(); // size of the viewing port in characters
+
+    let center_x = (x_chars / 2) as i32; // half the width of the viewport
+    let center_y = (y_chars / 2) as i32; // half the height of the viewport
+
+    let min_x = player_pos.x - center_x; // leftmost X of viewport
+    let max_x = min_x + x_chars as i32; // rightmost X of viewport
+    let min_y = player_pos.y - center_y; // topmost Y of viewport
+    let max_y = min_y + y_chars as i32; // bottommost Y of viewport
+
+    let map_width = map.width-1;
+    let map_height = map.height-1;
+
+    let mut y = 0;
+    for ty in min_y .. max_y {
+        let mut x = 0;
+        for tx in min_x .. max_x {
+            // iterate across every tile in the map
+            if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
+                // If the tile is not on the edge of the map...
+                let idx = map.xy_idx(tx, ty);
+                if map.revealed_tiles[idx] {
+                    let (glyph, fg, bg) = get_tile_glyph(idx, &*map);
+                    ctx.set(x, y, fg, bg, glyph);
+                }
+            } else if SHOW_BOUNDARIES {
+                // If we're showing the boundaries of the map, render an interpunct
+                ctx.set(x, y, RGB::named(rltk::GREY), RGB::named(rltk::BLACK), rltk::to_cp437('·'));
+            }
+            x += 1;
+        }
+        y +=1;
+    }
 }
