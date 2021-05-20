@@ -1,12 +1,12 @@
 use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
 use super::{
-    CombatStats, Player, Renderable, Name, Position, Viewshed, Monster,
+    CombatStats, Player, Renderable, Name, Position, Viewshed,
     BlocksTile, Rect,
     InflictsDamage, SerializeMe,
     random_table::RandomTable,
     HungerClock, HungerState, Hidden,
-    EntryTrigger, SingleActivation, RemembersPlayer, Map, TileType,
+    EntryTrigger, SingleActivation, Map, TileType,
     BlocksVisibility, Door, raws::*,
 };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
@@ -93,14 +93,12 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
     std::mem::drop(map);
 
     // Attempt to spawn using the rawmaster. If successful, bail early
-    let item_result = spawn_named_item(&RAWS.lock().unwrap(), ecs.create_entity(), &spawn.1, SpawnType::AtPosition{x,y});
-    if item_result.is_some() {
+    let spawn_result = spawn_named_entity(&RAWS.lock().unwrap(), ecs.create_entity(), &spawn.1, SpawnType::AtPosition{x, y});
+    if spawn_result.is_some() {
         return;
     }
 
     match spawn.1.as_ref() {
-        "Goblin" => goblin(ecs, x, y),
-        "Orc" => orc(ecs, x, y),
         "Bear Trap" => bear_trap(ecs, x, y),
         "Door" => door(ecs, x, y),
         _ => {}
@@ -121,38 +119,6 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("Rations", 10)
         .add("Magic Mapping Scroll", 2)
         .add("Bear Trap", 2 + (map_depth / 2))
-}
-
-// Monsters
-
-fn orc(ecs: &mut World, x: i32, y: i32) { monster(ecs, x, y, rltk::to_cp437('o'), "Orc"); }
-fn goblin(ecs: &mut World, x: i32, y: i32) { monster(ecs, x, y, rltk::to_cp437('g'), "Goblin"); }
-
-fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharType, name: S) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable{
-            glyph,
-            fg: RGB::named(rltk::RED),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 1,
-        })
-        .with(Viewshed{ visible_tiles: Vec::new(), range: 8, dirty: true })
-        .with(Monster{})
-        .with(Name{ name: name.to_string() })
-        .with(BlocksTile {})
-        .with(RemembersPlayer{
-            max_memory: 4,
-            memory: 0,
-        })
-        .with(CombatStats{
-            max_hp: 16,
-            hp: 16,
-            defense: 1,
-            power: 4,
-        })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
 }
 
 // Furniture

@@ -2,12 +2,21 @@ rltk::embedded_resource!(RAW_FILE, "../../raws/spawns.json");
 
 mod item_structs;
 use item_structs::*;
+mod mob_structs;
+use mob_structs::*;
 mod rawmaster;
 pub use rawmaster::*;
 use std::sync::Mutex;
+use serde::{Deserialize};
 
 lazy_static! {
     pub static ref RAWS: Mutex<RawMaster> = Mutex::new(RawMaster::empty());
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Raws {
+    pub items: Vec<Item>,
+    pub mobs: Vec<Mob>,
 }
 
 pub fn load_raws() {

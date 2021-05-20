@@ -3,22 +3,25 @@ use specs::prelude::*;
 use crate::components::*;
 use super::{Raws};
 
+/// How to choose where to spawn an entity
+/// * `AtPosition{x, y}` - Spawns the entity at tile (x, y)
 pub enum SpawnType {
-    /// Spawns the entity at the given position
     AtPosition { x: i32, y: i32 },
 }
 
 pub struct RawMaster {
     raws: Raws,
     item_index: HashMap<String, usize>,
+    mob_index: HashMap<String, usize>,
 }
 
 impl RawMaster {
     /// Creates a new empty RawMaster
     pub fn empty() -> RawMaster {
         RawMaster {
-            raws: Raws{ items: Vec::new() },
+            raws: Raws{ items: Vec::new(), mobs: Vec::new() },
             item_index: HashMap::new(),
+            mob_index: HashMap::new(),
         }
     }
 
@@ -28,33 +31,64 @@ impl RawMaster {
         for (i, item) in self.raws.items.iter().enumerate() {
             self.item_index.insert(item.name.clone(), i);
         }
+        self.mob_index = HashMap::new();
+        for (i, mob) in self.raws.mobs.iter().enumerate() {
+            self.mob_index.insert(mob.name.clone(), i);
+        }
     }
 
 }
 
-pub fn spawn_named_item(raws: &RawMaster, new_entity: EntityBuilder, key: &str, pos: SpawnType) -> Option<Entity> {
-    if raws.item_index.contains_key(key) {
+/// Spawns a given entity at a given location
+fn spawn_position(pos: SpawnType, new_entity: EntityBuilder) -> EntityBuilder {
+    let mut eb = new_entity;
+
+    // Spawn in the specified location
+    match pos {
+        SpawnType::AtPosition{x, y} => {
+            eb = eb.with(Position{x, y});
+        }
+    }
+
+    eb
+}
+
+/// Given the json definition of a renderable component, returns that component to be added to an entity.
+fn get_renderable_component(renderable: &super::item_structs::Renderable) -> crate::components::Renderable {
+    crate::components::Renderable {
+        glyph: rltk::to_cp437(renderable.glyph.chars().next().unwrap()),
+        fg: rltk::RGB::from_hex(&renderable.fg).expect("Invalid RGB"),
+        bg: rltk::RGB::from_hex(&renderable.bg).expect("Invalid RGB"),
+        render_order: renderable.order
+    }
+}
+
+/// Spawns the named item
+/// 
+/// # Arguments
+/// 
+/// * `raws` - The rawmaster containing the definitions of spawnable entities
+/// * `new_entity` - the entity object to attach components to (usually a newly created entity)
+/// * `name` - The name of the entity to spawn, e.g. "Tower Shield", "Healing Potion"
+/// * `pos` - How to choose where to spawn the entity.
+/// 
+/// # Returns
+/// `Option<Entity>` - If the rawmaster contains an entity matching the name given in `key`, the return value will be that entity.
+/// If no match is found, `None` is returned instead.
+pub fn spawn_named_item(raws: &RawMaster, new_entity: EntityBuilder, name: &str, pos: SpawnType) -> Option<Entity> {
+    if raws.item_index.contains_key(name) {
         // If the given key exists in the rawmaster, set the template equal to that item's raw definition
-        let item_template = &raws.raws.items[raws.item_index[key]];
+        let item_template = &raws.raws.items[raws.item_index[name]];
 
         // Create a builder
         let mut eb = new_entity;
 
         // Spawn in the specified location
-        match pos {
-            SpawnType::AtPosition{x,y} => {
-                eb = eb.with(Position{x, y});
-            }
-        }
+        eb = spawn_position(pos, eb);
 
         // If the item is renderable, add the renderable component
         if let Some(renderable) = &item_template.renderable {
-            eb = eb.with(crate::components::Renderable{
-                glyph: rltk::to_cp437(renderable.glyph.chars().next().unwrap()),
-                fg: rltk::RGB::from_hex(&renderable.fg).expect("Invalid RGB"),
-                bg: rltk::RGB::from_hex(&renderable.bg).expect("Invalid RGB"),
-                render_order: renderable.order
-            });
+            eb = eb.with(get_renderable_component(renderable));
         }
 
         // Give the entity a name
@@ -95,6 +129,67 @@ pub fn spawn_named_item(raws: &RawMaster, new_entity: EntityBuilder, key: &str, 
         }
 
         return Some(eb.build());
+    }
+
+    None
+}
+
+/// Spawns a named mob
+/// # Arguments
+/// 
+/// * `raws` - The rawmaster containing the definitions of spawnable entities
+/// * `new_entity` - the entity object to attach components to (usually a newly created entity)
+/// * `name` - The name of the entity to spawn, e.g. "Orc", "Goblin"
+/// * `pos` - How to choose where to spawn the entity.
+/// 
+/// # Returns
+/// `Option<Entity>` - If the rawmaster contains an entity matching the `name` given, the return value will be that entity.
+/// If no match is found, `None` is returned instead.
+pub fn spawn_named_mob(raws: &RawMaster, new_entity: EntityBuilder, name: &str, pos: SpawnType) -> Option<Entity> {
+    if raws.mob_index.contains_key(name) {
+        let mob_template = &raws.raws.mobs[raws.mob_index[name]];
+
+        let mut eb = new_entity;
+
+        // Spawn in the specified location
+        eb = spawn_position(pos, eb);
+
+        // Renderable
+        if let Some(renderable) = &mob_template.renderable {
+            eb = eb.with(get_renderable_component(renderable));
+        }
+
+        eb = eb.with(Name{ name: mob_template.name.clone() });
+
+        eb = eb.with(Monster{});
+        if mob_template.blocks_tile {
+            eb = eb.with(BlocksTile{});
+        }
+        eb = eb.with(CombatStats{
+            max_hp: mob_template.stats.max_hp,
+            hp: mob_template.stats.hp,
+            power: mob_template.stats.power,
+            defense: mob_template.stats.defense
+        });
+        // If the mob has a memory, give it the RemembersPlayer component
+        if let Some(memory) = &mob_template.memory {
+            eb = eb.with(RemembersPlayer{
+                max_memory: memory.max_memory,
+                memory: 0
+            })
+        }
+        eb = eb.with(Viewshed{ visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
+
+        return Some(eb.build());
+    }
+    None
+}
+
+pub fn spawn_named_entity(raws: &RawMaster, new_entity: EntityBuilder, name: &str, pos: SpawnType) -> Option<Entity> {
+    if raws.item_index.contains_key(name) {
+        return spawn_named_item(raws, new_entity, name, pos);
+    } else if raws.mob_index.contains_key(name) {
+        return spawn_named_mob(raws, new_entity, name, pos);
     }
 
     None
