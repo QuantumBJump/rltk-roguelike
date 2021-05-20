@@ -1,4 +1,4 @@
-# v0.3.0
+# v0.3.0 (2021/05/20)
 ## Features
 * Factored map building out into a module to improve extensibility
 * Added several new types of map generation
@@ -15,6 +15,7 @@
     * Added prefabs
 * Refactored map gen code to be more composable
 * Added doors
+* Added moving camera
 
 # v0.2.0
 ## Features
