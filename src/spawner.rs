@@ -99,18 +99,5 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
     }
 }
 fn room_table(map_depth: i32) -> RandomTable {
-    RandomTable::new()
-        .add("Goblin", 10)
-        .add("Orc", 1 + map_depth)
-        .add("Health Potion", 7)
-        .add("Fireball Scroll", 2 + map_depth)
-        .add("Stun Scroll", 2 + map_depth)
-        .add("Magic Missile Scroll", 4)
-        .add("Dagger", 3)
-        .add("Buckler", 3)
-        .add("Longsword", map_depth - 1)
-        .add("Tower Shield", map_depth - 1)
-        .add("Rations", 10)
-        .add("Magic Mapping Scroll", 2)
-        .add("Bear Trap", 2 + (map_depth / 2))
+    get_spawn_table_for_depth(&RAWS.lock().unwrap(), map_depth)
 }
