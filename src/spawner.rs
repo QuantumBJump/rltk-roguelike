@@ -2,12 +2,12 @@ use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
 use super::{
     CombatStats, Player, Renderable, Name, Position, Viewshed, Monster,
-    BlocksTile, Rect, Item, Consumable, ProvidesHealing,
+    BlocksTile, Rect, Item, Consumable,
     Ranged, InflictsDamage, AreaOfEffect, Stunned, SerializeMe,
     random_table::RandomTable, Equippable, EquipmentSlot, MeleePowerBonus,
     DefenseBonus, HungerClock, HungerState, ProvidesFood, MagicMapper, Hidden,
     EntryTrigger, SingleActivation, RemembersPlayer, Map, TileType,
-    BlocksVisibility, Door,
+    BlocksVisibility, Door, raws::*,
 };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -92,13 +92,17 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
     let y = (*spawn.0 / width) as i32;
     std::mem::drop(map);
 
+    // Attempt to spawn using the rawmaster. If successful, bail early
+    let item_result = spawn_named_item(&RAWS.lock().unwrap(), ecs.create_entity(), &spawn.1, SpawnType::AtPosition{x,y});
+    if item_result.is_some() {
+        return;
+    }
+
     match spawn.1.as_ref() {
         "Goblin" => goblin(ecs, x, y),
         "Orc" => orc(ecs, x, y),
-        "Health Potion" => health_potion(ecs, x, y),
         "Fireball Scroll" => fireball_scroll(ecs, x, y),
         "Stun Scroll" => stun_scroll(ecs, x, y),
-        "Magic Missile Scroll" => magic_missile_scroll(ecs, x, y),
         "Dagger" => dagger(ecs, x, y),
         "Shield" => shield(ecs, x, y),
         "Longsword" => longsword(ecs, x, y),
@@ -160,41 +164,6 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharTy
 }
 
 // Items
-
-fn health_potion(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position{ x, y})
-        .with(Renderable{
-            glyph: rltk::to_cp437('¡'),
-            fg: RGB::named(rltk::MAGENTA),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name{name: "Health Potion".to_string()})
-        .with(Item{})
-        .with(Consumable{})
-        .with(ProvidesHealing{heal_amount: 8})
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
-
-fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
-    ecs.create_entity()
-        .with(Position{ x, y })
-        .with(Renderable{
-            glyph: rltk::to_cp437(')'),
-            fg: RGB::named(rltk::CYAN),
-            bg: RGB::named(rltk::BLACK),
-            render_order: 2,
-        })
-        .with(Name{ name: "Magic Missile Scroll".to_string() })
-        .with(Item{})
-        .with(Consumable{})
-        .with(Ranged{ range: 6 })
-        .with(InflictsDamage{ damage: 8 })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
 
 fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()

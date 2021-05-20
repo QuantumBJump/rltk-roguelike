@@ -2,6 +2,8 @@ use rltk::{Rltk, GameState, Point};
 use specs::prelude::*;
 extern crate serde;
 use specs::saveload::{ SimpleMarker, SimpleMarkerAllocator };
+#[macro_use]
+extern crate lazy_static;
 
 mod components;
 pub use components::*;
@@ -13,6 +15,7 @@ mod rect;
 pub use rect::Rect;
 mod rex_assets;
 pub mod camera;
+pub mod raws;
 
 mod visibility_system;
 use visibility_system::VisibilitySystem;
@@ -486,6 +489,9 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Door>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+
+    // load raw files
+    raws::load_raws();
 
     // Add the map with placeholder values
     gs.ecs.insert(Map::new(1, 64, 64));

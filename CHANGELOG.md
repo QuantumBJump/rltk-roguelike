@@ -1,3 +1,6 @@
+# v0.4.0
+## Features
+* Added raw file decoder to allow for easier definition of spawnable entities
 # v0.3.0 (2021/05/20)
 ## Features
 * Factored map building out into a module to improve extensibility
