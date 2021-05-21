@@ -1,5 +1,5 @@
 use serde::{Deserialize};
-use super::{Renderable};
+// use super::{Renderable};
 
 #[derive(Deserialize, Debug)]
 pub struct SpawnTableEntry {

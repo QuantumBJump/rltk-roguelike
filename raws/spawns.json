@@ -11,7 +11,9 @@
         { "name": "Longsword", "weight": 1, "min_depth": 1, "max_depth": 100},
         { "name": "Tower Shield", "weight": 1, "min_depth": 1, "max_depth": 100},
         { "name": "Rations", "weight": 10, "min_depth": 0, "max_depth": 100 },
-        { "name": "Bear Trap", "weight": 5, "min_depth": 0, "max_depth": 100 }
+        { "name": "Bear Trap", "weight": 5, "min_depth": 0, "max_depth": 100 },
+        { "name": "Battleaxe", "weight": 1, "min_depth": 2, "max_depth": 100 },
+        { "name": "Kobold", "weight": 15, "min_depth": 0, "max_depth": 3}
     ],
     "items": [
         {
@@ -151,6 +153,19 @@
             "shield": {
                 "defense_bonus": 3
             }
+        },
+        {
+            "name": "Battleaxe",
+            "renderable": {
+                "glyph": "¶",
+                "fg": "#FF55FF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "power_bonus": 5
+            }
         }
     ],
     "mobs": [
@@ -193,6 +208,26 @@
                 "max_memory": 4
             },
             "vision_range": 8
+        },
+        {
+            "name": "Kobold",
+            "renderable": {
+                "glyph": "k",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "stats": {
+                "max_hp": 4,
+                "hp": 4,
+                "defense": 0,
+                "power": 2
+            },
+            "memory": {
+                "max_memory": 1
+            },
+            "vision_range": 4
         }
     ],
     "props": [

@@ -53,7 +53,7 @@ impl WaveformCollapseBuilder {
     }
 
     fn render_tile_gallery(&mut self, constraints: &[MapChunk], chunk_size: i32, build_data: &mut BuilderMap) {
-        build_data.map = Map::new(0, build_data.map.width, build_data.map.height);
+        build_data.map = Map::new(build_data.map.depth, build_data.map.width, build_data.map.height);
         let mut counter = 0;
         let mut x = 1;
         let mut y = 1;
@@ -69,7 +69,7 @@ impl WaveformCollapseBuilder {
                 if y + chunk_size > build_data.map.height {
                     // Move to next page
                     build_data.take_snapshot();
-                    build_data.map = Map::new(0, build_data.map.width, build_data.map.height);
+                    build_data.map = Map::new(build_data.map.depth, build_data.map.width, build_data.map.height);
 
                     x = 1;
                     y = 1;
