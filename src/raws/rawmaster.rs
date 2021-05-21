@@ -1,8 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use specs::prelude::*;
 use crate::components::*;
 use super::{Raws};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
+use crate::random_table::{RandomTable};
 
 /// How to choose where to spawn an entity
 /// * `AtPosition{x, y}` - Spawns the entity at tile (x, y)
@@ -21,7 +22,7 @@ impl RawMaster {
     /// Creates a new empty RawMaster
     pub fn empty() -> RawMaster {
         RawMaster {
-            raws: Raws{ items: Vec::new(), mobs: Vec::new(), props: Vec::new() },
+            raws: Raws{ items: Vec::new(), mobs: Vec::new(), props: Vec::new(), spawn_table: Vec::new() },
             item_index: HashMap::new(),
             mob_index: HashMap::new(),
             prop_index: HashMap::new(),
@@ -30,17 +31,36 @@ impl RawMaster {
 
     pub fn load(&mut self, raws: Raws) {
         self.raws = raws;
+        let mut used_names: HashSet<String> = HashSet::new();
         self.item_index = HashMap::new();
         for (i, item) in self.raws.items.iter().enumerate() {
+            if used_names.contains(&item.name) {
+                rltk::console::log(format!("WARNING - duplicate item name in raws [{}]", item.name));
+            }
             self.item_index.insert(item.name.clone(), i);
+            used_names.insert(item.name.clone());
         }
         self.mob_index = HashMap::new();
         for (i, mob) in self.raws.mobs.iter().enumerate() {
+            if used_names.contains(&mob.name) {
+                rltk::console::log(format!("WARNING - duplicate mob name in raws [{}]", mob.name));
+            }
             self.mob_index.insert(mob.name.clone(), i);
+            used_names.insert(mob.name.clone());
         }
         self.prop_index = HashMap::new();
         for (i, prop) in self.raws.props.iter().enumerate() {
+            if used_names.contains(&prop.name) {
+                rltk::console::log(format!("WARNING - duplicate prop name in raws [{}]", prop.name));
+            }
             self.prop_index.insert(prop.name.clone(), i);
+            used_names.insert(prop.name.clone());
+        }
+
+        for spawn in self.raws.spawn_table.iter() {
+            if !used_names.contains(&spawn.name) {
+                rltk::console::log(format!("WARNING - Spawn tables reference unspecified entity {}", spawn.name));
+            }
         }
     }
 
@@ -241,6 +261,7 @@ pub fn spawn_named_prop(raws: &RawMaster, new_entity: EntityBuilder, name: &str,
     None
 }
 
+/// Spawns a named entity
 pub fn spawn_named_entity(raws: &RawMaster, new_entity: EntityBuilder, name: &str, pos: SpawnType) -> Option<Entity> {
     if raws.item_index.contains_key(name) {
         return spawn_named_item(raws, new_entity, name, pos);
@@ -251,4 +272,25 @@ pub fn spawn_named_entity(raws: &RawMaster, new_entity: EntityBuilder, name: &st
     }
 
     None
+}
+
+/// Gets a raw-defined spawn table for a given depth of the dungeon.
+pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
+    use super::SpawnTableEntry;
+
+    let available_options: Vec<&SpawnTableEntry> = raws.raws.spawn_table
+        .iter()
+        .filter(|a| depth >= a.min_depth && depth <= a.max_depth)
+        .collect();
+
+    let mut rt = RandomTable::new();
+    for e in available_options.iter() {
+        let mut weight = e.weight;
+        if e.add_map_depth_to_weight.is_some() {
+            weight += depth;
+        }
+        rt = rt.add(e.name.clone(), weight);
+    }
+
+    rt
 }
