@@ -7,7 +7,9 @@
     * A blacksmith, clothier, and alchemist
     * Your mum's house
     * Several peasant houses
+    * An abandoned house filled with rats!
 ## Bugfixes
+* You no longer accidentally murder your mother when you bump into her
 # v0.3.0 (2021/05/20)
 ## Features
 * Factored map building out into a module to improve extensibility
