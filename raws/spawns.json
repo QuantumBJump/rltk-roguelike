@@ -260,6 +260,96 @@
             "ai": "bystander"
         },
         {
+            "name": "Blacksmith",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "stats": {
+                "max_hp": 16,
+                "hp": 16,
+                "defense": 1,
+                "power": 4
+            },
+            "vision_range": 4,
+            "ai": "bystander"
+        },
+        {
+            "name": "Clothier",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "stats": {
+                "max_hp": 16,
+                "hp": 16,
+                "defense": 1,
+                "power": 4
+            },
+            "vision_range": 4,
+            "ai": "bystander"
+        },
+        {
+            "name": "Alchemist",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "stats": {
+                "max_hp": 16,
+                "hp": 16,
+                "defense": 1,
+                "power": 4
+            },
+            "vision_range": 4,
+            "ai": "bystander"
+        },
+        {
+            "name": "Mum",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#FFAAAA",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "stats": {
+                "max_hp": 16,
+                "hp": 16,
+                "defense": 1,
+                "power": 4
+            },
+            "vision_range": 4,
+            "ai": "bystander"
+        },
+        {
+            "name": "Peasant",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#999999",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "stats": {
+                "max_hp": 16,
+                "hp": 16,
+                "defense": 1,
+                "power": 4
+            },
+            "vision_range": 4,
+            "ai": "bystander"
+        },
+        {
             "name": "Orc",
             "renderable": {
                 "glyph": "o",
@@ -388,6 +478,114 @@
             "renderable": {
                 "glyph": "Ä",
                 "fg": "#FFA500",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false,
+            "blocks_tile": true
+        },
+        {
+            "name": "Anvil",
+            "renderable": {
+                "glyph": "╔",
+                "fg": "#AAAAAA",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false,
+            "blocks_tile": true
+        },
+        {
+            "name": "Water Trough",
+            "renderable": {
+                "glyph": "•",
+                "fg": "#5555FF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false,
+            "blocks_tile": true
+        },
+        {
+            "name": "Weapon Rack",
+            "renderable": {
+                "glyph": "π",
+                "fg": "#FFD700",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false,
+            "blocks_tile": true
+        },
+        {
+            "name": "Armour Stand",
+            "renderable": {
+                "glyph": "⌠",
+                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false,
+            "blocks_tile": true
+        },
+        {
+            "name": "Chemistry Set",
+            "renderable": {
+                "glyph": "δ",
+                "fg": "#00FFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false,
+            "blocks_tile": true
+        },
+        {
+            "name": "Dead Thing",
+            "renderable": {
+                "glyph": "☻",
+                "fg": "#AA0000",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false
+        },
+        {
+            "name": "Cabinet",
+            "renderable": {
+                "glyph": "∩",
+                "fg": "#805A46",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false,
+            "blocks_tile": true
+        },
+        {
+            "name": "Bed",
+            "renderable": {
+                "glyph": "8",
+                "fg": "#805A46",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false
+        },
+        {
+            "name": "Loom",
+            "renderable": {
+                "glyph": "≡",
+                "fg": "#805A46",
+                "bg": "#000000",
+                "order": 2
+            },
+            "hidden": false,
+            "blocks_tile": true
+        },
+        {
+            "name": "Hide Rack",
+            "renderable": {
+                "glyph": "π",
+                "fg": "#805A46",
                 "bg": "#000000",
                 "order": 2
             },

@@ -4,6 +4,10 @@
 * Added a fishing town for your adventure to start in, containing:
     * A pub
     * A temple
+    * A blacksmith, clothier, and alchemist
+    * Your mum's house
+    * Several peasant houses
+## Bugfixes
 # v0.3.0 (2021/05/20)
 ## Features
 * Factored map building out into a module to improve extensibility
