@@ -43,7 +43,7 @@ pub fn save_game(ecs: &mut World) {
             DefenseBonus, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
-            Bystander
+            Bystander, Vendor
         );
     }
 }
@@ -94,7 +94,7 @@ pub fn load_game(ecs: &mut World) {
             DefenseBonus, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
-            Bystander
+            Bystander, Vendor
         );
     }
 
