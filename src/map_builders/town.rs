@@ -1,6 +1,18 @@
 use super::{BuilderChain, BuilderMap, InitialMapBuilder, Position, TileType};
 use std::collections::HashSet;
 
+enum BuildingTag {
+    Pub,
+    Temple,
+    Blacksmith,
+    Clothier,
+    Alchemist,
+    PlayerHouse,
+    Hovel,
+    Abandoned,
+    Unassigned,
+}
+
 pub fn town_builder(
     new_depth: i32,
     _rng: &mut rltk::RandomNumberGenerator,
@@ -50,21 +62,8 @@ impl TownBuilder {
         build_data.map.tiles[exit_idx] = TileType::DownStairs;
 
         // Sort buildings by size (we want the largest building to be the pub)
-        let mut building_size: Vec<(usize, i32)> = Vec::new();
-        for (i, building) in buildings.iter().enumerate() {
-            building_size.push((
-                i,
-                building.2 * building.3, // width * height
-            ));
-        }
-        building_size.sort_by(|a, b| b.1.cmp(&a.1));
-
-        // Start in the pub
-        let the_pub = &buildings[building_size[0].0];
-        build_data.starting_position = Some(Position {
-            x: the_pub.0 + (the_pub.2 / 2),
-            y: the_pub.1 + (the_pub.3 / 2),
-        });
+        let building_size = self.sort_buildings(&buildings);
+        self.building_factory(rng, build_data, &buildings, &building_size);
     }
 
     fn grass_layer(&mut self, build_data: &mut BuilderMap) {
@@ -311,6 +310,80 @@ impl TownBuilder {
                 }
             }
             build_data.take_snapshot();
+        }
+    }
+
+    /// Sorts and tags all the buildings in the town.
+    fn sort_buildings(
+        &mut self,
+        buildings: &[(i32, i32, i32, i32)],
+    ) -> Vec<(usize, i32, BuildingTag)> {
+        let mut building_size: Vec<(usize, i32, BuildingTag)> = Vec::new();
+        for (i, building) in buildings.iter().enumerate() {
+            building_size.push((
+                i,
+                building.2 * building.3, // width * height
+                BuildingTag::Unassigned
+            ));
+        }
+        building_size.sort_by(|a, b| b.1.cmp(&a.1)); // Sort buildings descending by size
+        // Tag all the buildings
+        building_size[0].2 = BuildingTag::Pub;
+        building_size[1].2 = BuildingTag::Temple;
+        building_size[2].2 = BuildingTag::Blacksmith;
+        building_size[3].2 = BuildingTag::Clothier;
+        building_size[4].2 = BuildingTag::Alchemist;
+        building_size[5].2 = BuildingTag::PlayerHouse;
+        for b in building_size.iter_mut().skip(6) {
+            b.2 = BuildingTag::Hovel;
+        }
+        let last_index = building_size.len()-1;
+        building_size[last_index].2 = BuildingTag::Abandoned;
+        building_size.sort_by(|a, b| a.0.cmp(&b.0));
+
+        building_size
+    }
+
+    fn building_factory(&mut self,
+        rng: &mut rltk::RandomNumberGenerator,
+        build_data: &mut BuilderMap,
+        buildings: &[(i32, i32, i32, i32)],
+        building_index: &[(usize, i32, BuildingTag)],
+    ) {
+        for (i, building) in buildings.iter().enumerate() {
+            let build_type = &building_index[i].2;
+            match build_type {
+                BuildingTag::Pub => self.build_pub(&building, build_data, rng),
+                _ => {}
+            }
+        }
+    }
+
+    /// Builds the pub. Adds some other hung-over patrons, a "lost" goods salesperson, a barkeep,
+    /// tables, chairs and barrels.
+    fn build_pub(&mut self,
+        building: &(i32, i32, i32, i32),
+        build_data: &mut BuilderMap,
+        rng: &mut rltk::RandomNumberGenerator,
+    ) {
+        // Place the player
+        build_data.starting_position = Some(Position{
+            x: building.0 + (building.2 / 2),
+            y: building.1 + (building.3 / 2),
+        });
+        let player_idx = build_data.map.xy_idx(build_data.starting_position.as_ref().unwrap().x, build_data.starting_position.as_ref().unwrap().y);
+
+        // Place other items
+        let mut to_place: Vec<&str> = vec!["Barkeep", "Shady Vendor", "Patron", "Patron", "Table", "Chair", "Table", "Chair"];
+        for y in building.1 .. building.1 + building.3 {
+            for x in building.0 .. building.0 + building.2 {
+                let idx = build_data.map.xy_idx(x, y);
+                if build_data.map.tiles[idx] == TileType::WoodFloor && idx != player_idx && rng.roll_dice(1, 3) == 1 && !to_place.is_empty() {
+                    let entity_tag = to_place[0];
+                    to_place.remove(0);
+                    build_data.spawn_list.push((idx, entity_tag.to_string()));
+                }
+            }
         }
     }
 }

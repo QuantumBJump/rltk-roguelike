@@ -50,8 +50,12 @@ pub struct HungerClock {
     pub duration: i32,
 }
 
+// AIs
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Monster {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Bystander {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
