@@ -178,14 +178,12 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
-            "ai": "vendor"
+            "ai": "vendor",
+            "attributes": {},
+            "skills": {
+                "Melee": 2
+            }
         },
         {
             "name": "Shady Vendor",
@@ -196,14 +194,9 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
-            "ai": "vendor"
+            "ai": "vendor",
+            "attributes": {}
         },
         {
             "name": "Patron",
@@ -214,15 +207,10 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
             "ai": "bystander",
-            "quips" : [ "Quiet down, it's too early!", "Oh my, I drank too much.", "Still saving the world, eh?" ]
+            "quips" : [ "Quiet down, it's too early!", "Oh my, I drank too much.", "Still saving the world, eh?" ],
+            "attributes": {}
         },
         {
             "name": "Priest",
@@ -233,14 +221,9 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
-            "ai": "bystander"
+            "ai": "bystander",
+            "attributes": {}
         },
         {
             "name": "Parishioner",
@@ -251,15 +234,10 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
             "ai": "bystander",
-            "quips" : [ "Great to see a new face here!", "I hear there's going to be a good sermon on tea", "Want some cake?" ]
+            "quips" : [ "Great to see a new face here!", "I hear there's going to be a good sermon on tea", "Want some cake?" ],
+            "attributes": {}
         },
         {
             "name": "Blacksmith",
@@ -270,14 +248,9 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
-            "ai": "vendor"
+            "ai": "vendor",
+            "attributes": {}
         },
         {
             "name": "Clothier",
@@ -288,14 +261,9 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
-            "ai": "vendor"
+            "ai": "vendor",
+            "attributes": {}
         },
         {
             "name": "Alchemist",
@@ -306,14 +274,9 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
-            "ai": "vendor"
+            "ai": "vendor",
+            "attributes": {}
         },
         {
             "name": "Mum",
@@ -324,15 +287,10 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
             "ai": "bystander",
-            "quips" : [ "Hello, dear", "Off saving the world again?", "Be careful in the dungeon!", "Your father would be so proud, were he here." ]
+            "quips" : [ "Hello, dear", "Off saving the world again?", "Be careful in the dungeon!", "Your father would be so proud, were he here." ],
+            "attributes": {}
         },
         {
             "name": "Peasant",
@@ -343,15 +301,10 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "vision_range": 4,
             "ai": "bystander",
-            "quips" : [ "Why are you in my house?" ]
+            "quips" : [ "Why are you in my house?" ],
+            "attributes": {}
         },
         {
             "name" : "Dock Worker",
@@ -362,15 +315,10 @@
                 "order" : 1
             },
             "blocks_tile" : true,
-            "stats" : {
-                "max_hp" : 16,
-                "hp" : 16,
-                "defense" : 1,
-                "power" : 4
-            },
             "vision_range" : 4,
             "ai" : "bystander",
-            "quips" : [ "Lovely day, eh?", "Nice weather", "Hello" ]
+            "quips" : [ "Lovely day, eh?", "Nice weather", "Hello" ],
+            "attributes": {}
         },
         {
             "name" : "Fisher",
@@ -381,15 +329,10 @@
                 "order" : 1
             },
             "blocks_tile" : true,
-            "stats" : {
-                "max_hp" : 16,
-                "hp" : 16,
-                "defense" : 1,
-                "power" : 4
-            },
             "vision_range" : 4,
             "ai" : "bystander",
-            "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain" ]
+            "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain" ],
+            "attributes": {}
         },
         {
             "name" : "Wannabe Pirate",
@@ -400,15 +343,10 @@
                 "order" : 1
             },
             "blocks_tile" : true,
-            "stats" : {
-                "max_hp" : 16,
-                "hp" : 16,
-                "defense" : 1,
-                "power" : 4
-            },
             "vision_range" : 4,
             "ai" : "bystander",
-            "quips" : [ "Arrr", "Grog!", "Booze!" ]
+            "quips" : [ "Arrr", "Grog!", "Booze!" ],
+            "attributes": {}
         },
         {
             "name" : "Drunk",
@@ -419,15 +357,10 @@
                 "order" : 1
             },
             "blocks_tile" : true,
-            "stats" : {
-                "max_hp" : 16,
-                "hp" : 16,
-                "defense" : 1,
-                "power" : 4
-            },
             "vision_range" : 4,
             "ai" : "bystander",
-            "quips" : [ "Hic", "Need... more... booze!", "Spare a copper?" ]
+            "quips" : [ "Hic", "Need... more... booze!", "Spare a copper?" ],
+            "attributes": {}
         },
         {
             "name": "Rat",
@@ -438,16 +371,18 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 2,
-                "hp": 2,
-                "defense": 1,
-                "power": 3
-            },
             "vision_range": 8,
             "ai": "melee",
             "memory": {
                 "max_memory": 1
+            },
+            "attributes": {
+                "Might": 3,
+                "Fitness": 3
+            },
+            "skills": {
+                "Melee": -1,
+                "Defense": -1
             }
         },
         {
@@ -459,17 +394,12 @@
                 "order":1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 16,
-                "hp": 16,
-                "defense": 1,
-                "power": 4
-            },
             "memory": {
                 "max_memory": 8
             },
             "vision_range": 8,
-            "ai": "melee"
+            "ai": "melee",
+            "attributes": {}
         },
         {
             "name": "Goblin",
@@ -480,17 +410,12 @@
                 "order":1
             },
             "blocks_tile":true,
-            "stats": {
-                "max_hp": 8,
-                "hp": 8,
-                "defense": 1,
-                "power": 3
-            },
             "memory": {
                 "max_memory": 4
             },
             "vision_range": 8,
-            "ai": "melee"
+            "ai": "melee",
+            "attributes": {}
         },
         {
             "name": "Kobold",
@@ -501,17 +426,12 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "stats": {
-                "max_hp": 4,
-                "hp": 4,
-                "defense": 0,
-                "power": 2
-            },
             "memory": {
                 "max_memory": 1
             },
             "vision_range": 4,
-            "ai": "melee"
+            "ai": "melee",
+            "attributes": {}
         }
     ],
     "props": [

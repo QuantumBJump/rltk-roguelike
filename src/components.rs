@@ -1,6 +1,7 @@
 use specs::prelude::*;
 use specs_derive::*;
 use rltk::{RGB};
+use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use specs::saveload::{Marker, ConvertSaveload};
 use specs::error::NoError;
@@ -35,6 +36,44 @@ pub struct Viewshed {
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct Name {
     pub name: String
+}
+
+// Game Stats
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Attribute {
+    pub base: i32,
+    pub modifiers: i32,
+    pub bonus: i32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Attributes {
+    pub might: Attribute,
+    pub fitness: Attribute,
+    pub quickness: Attribute,
+    pub intelligence: Attribute
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum Skill { Melee, Defense, Magic }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Skills {
+    pub skills: HashMap<Skill, i32>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Pool {
+    pub max: i32,
+    pub current: i32,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Pools {
+    pub hit_points: Pool,
+    pub mana: Pool,
+    pub xp: i32,
+    pub level: i32,
 }
 
 // Actors
@@ -76,14 +115,6 @@ pub struct RemembersPlayer {
     // How long the enemy will continue to pursue the player after losing sight.
     pub max_memory: i32,
     pub memory: i32,
-}
-
-#[derive(Component, Debug, ConvertSaveload, Clone)]
-pub struct CombatStats {
-    pub max_hp: i32,
-    pub hp: i32,
-    pub defense: i32,
-    pub power: i32,
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]

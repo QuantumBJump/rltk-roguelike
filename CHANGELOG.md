@@ -9,6 +9,7 @@
     * Several peasant houses
     * An abandoned house filled with rats!
 * Townsfolk will sometimes speak their mind when near you
+* Reworked melee combat to use a d20-like system
 ## Bugfixes
 * You no longer accidentally murder your mother when you bump into her
 # v0.3.0 (2021/05/20)
