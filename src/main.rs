@@ -368,7 +368,7 @@ impl State {
         self.generate_world_map(current_depth + 1);
 
         // Notify the player and regenerate some health.
-        let player_entity = self.ecs.fetch::<Entity>();
+        let _player_entity = self.ecs.fetch::<Entity>();
         let mut gamelog = self.ecs.fetch_mut::<gamelog::GameLog>();
         gamelog.entries.push("You descend to the next level.".to_string());
     }
@@ -477,7 +477,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<Equippable>();
     gs.ecs.register::<Equipped>();
-    gs.ecs.register::<MeleePowerBonus>();
+    gs.ecs.register::<MeleeWeapon>();
     gs.ecs.register::<DefenseBonus>();
     gs.ecs.register::<ParticleLifetime>();
     gs.ecs.register::<HungerClock>();

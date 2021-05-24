@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use specs::prelude::*;
 use crate::components::*;
-use crate::{attr_bonus, npc_hp, mana_at_level};
+use crate::{attr_bonus, npc_hp, mana_at_level, parse_dice_string};
 use super::{Raws};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use crate::random_table::{RandomTable};
@@ -10,6 +10,8 @@ use crate::random_table::{RandomTable};
 /// * `AtPosition{x, y}` - Spawns the entity at tile (x, y)
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },
+    Equipped { by: Entity },
+    Carried { by: Entity }
 }
 
 pub struct RawMaster {
@@ -67,18 +69,34 @@ impl RawMaster {
 
 }
 
+fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
+    if !raws.item_index.contains_key(tag) {
+        panic!("Trying to equip an unknown item: {}", tag);
+    }
+    let item_index = raws.item_index[tag];
+    let item = &raws.raws.items[item_index];
+    if let Some(_wpn) = &item.weapon {
+        return EquipmentSlot::Melee;
+    }
+    // else if let Some(wearable) = &item.wearable {
+    //     return string_to_slot(&wearable.slot);
+    // }
+    panic!("Trying to equip {}, but it has no slot tag.", tag);
+}
+
 /// Spawns a given entity at a given location
-fn spawn_position(pos: SpawnType, new_entity: EntityBuilder) -> EntityBuilder {
-    let mut eb = new_entity;
+fn spawn_position<'a>(pos: SpawnType, new_entity: EntityBuilder<'a>, tag: &str, raws: &RawMaster) -> EntityBuilder<'a> {
+    let eb = new_entity;
 
     // Spawn in the specified location
     match pos {
-        SpawnType::AtPosition{x, y} => {
-            eb = eb.with(Position{x, y});
+        SpawnType::AtPosition{x, y} => eb.with(Position{x, y}),
+        SpawnType::Carried{by} => eb.with(InBackpack{ owner: by }),
+        SpawnType::Equipped{by} => {
+            let slot = find_slot_for_equippable_item(tag, raws);
+            eb.with(Equipped{ owner: by, slot })
         }
     }
-
-    eb
 }
 
 /// Given the json definition of a renderable component, returns that component to be added to an entity.
@@ -91,29 +109,36 @@ fn get_renderable_component(renderable: &super::item_structs::Renderable) -> cra
     }
 }
 
+pub fn string_to_slot(slot: &str) -> EquipmentSlot {
+    match slot {
+        "Shield" => EquipmentSlot::Shield,
+        "Melee" => EquipmentSlot::Melee,
+        _ => { rltk::console::log(format!("Warning: unknown equipment slot type [{}]", slot)); EquipmentSlot::Melee }
+    }
+}
+
 /// Spawns the named item
 /// 
 /// # Arguments
 /// 
 /// * `raws` - The rawmaster containing the definitions of spawnable entities
-/// * `new_entity` - the entity object to attach components to (usually a newly created entity)
+/// * `ecs` - The Entity Component System
 /// * `name` - The name of the entity to spawn, e.g. "Tower Shield", "Healing Potion"
 /// * `pos` - How to choose where to spawn the entity.
 /// 
 /// # Returns
 /// `Option<Entity>` - If the rawmaster contains an entity matching the name given in `key`, the return value will be that entity.
 /// If no match is found, `None` is returned instead.
-pub fn spawn_named_item(raws: &RawMaster, new_entity: EntityBuilder, name: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, name: &str, pos: SpawnType) -> Option<Entity> {
     if raws.item_index.contains_key(name) {
         // If the given key exists in the rawmaster, set the template equal to that item's raw definition
         let item_template = &raws.raws.items[raws.item_index[name]];
 
         // Create a builder
-        let mut eb = new_entity;
-        eb = eb.marked::<SimpleMarker<SerializeMe>>();
+        let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
         // Spawn in the specified location
-        eb = spawn_position(pos, eb);
+        eb = spawn_position(pos, eb, name, raws);
 
         // If the item is renderable, add the renderable component
         if let Some(renderable) = &item_template.renderable {
@@ -150,7 +175,19 @@ pub fn spawn_named_item(raws: &RawMaster, new_entity: EntityBuilder, name: &str,
         // If the item is a weapon, add that component
         if let Some(weapon) = &item_template.weapon {
             eb = eb.with(Equippable{ slot: EquipmentSlot::Melee });
-            eb = eb.with(MeleePowerBonus{ power: weapon.power_bonus });
+            let (n_dice, die_type, bonus) = parse_dice_string(&weapon.base_damage);
+            let mut wpn = MeleeWeapon{
+                attribute: WeaponAttribute::Might,
+                damage_n_dice: n_dice,
+                damage_die_type: die_type,
+                damage_bonus: bonus,
+                hit_bonus: weapon.hit_bonus
+            };
+            match weapon.attribute.as_str() {
+                "Quickness" => wpn.attribute = WeaponAttribute::Quickness,
+                _ => wpn.attribute = WeaponAttribute::Might
+            }
+            eb = eb.with(wpn)
         }
         if let Some(shield) = &item_template.shield {
             eb = eb.with(Equippable{ slot: EquipmentSlot::Shield });
@@ -167,22 +204,21 @@ pub fn spawn_named_item(raws: &RawMaster, new_entity: EntityBuilder, name: &str,
 /// # Arguments
 /// 
 /// * `raws` - The rawmaster containing the definitions of spawnable entities
-/// * `new_entity` - the entity object to attach components to (usually a newly created entity)
+/// * `ecs` - The Entity Component System
 /// * `name` - The name of the entity to spawn, e.g. "Orc", "Goblin"
 /// * `pos` - How to choose where to spawn the entity.
 /// 
 /// # Returns
 /// `Option<Entity>` - If the rawmaster contains an entity matching the `name` given, the return value will be that entity.
 /// If no match is found, `None` is returned instead.
-pub fn spawn_named_mob(raws: &RawMaster, new_entity: EntityBuilder, name: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, name: &str, pos: SpawnType) -> Option<Entity> {
     if raws.mob_index.contains_key(name) {
         let mob_template = &raws.raws.mobs[raws.mob_index[name]];
 
-        let mut eb = new_entity;
-        eb = eb.marked::<SimpleMarker<SerializeMe>>();
+        let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
         // Spawn in the specified location
-        eb = spawn_position(pos, eb);
+        eb = spawn_position(pos, eb, name, raws);
 
         // Renderable
         if let Some(renderable) = &mob_template.renderable {
@@ -275,15 +311,14 @@ pub fn spawn_named_mob(raws: &RawMaster, new_entity: EntityBuilder, name: &str, 
     None
 }
 
-pub fn spawn_named_prop(raws: &RawMaster, new_entity: EntityBuilder, name: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, name: &str, pos: SpawnType) -> Option<Entity> {
     if raws.prop_index.contains_key(name) {
         let prop_template = &raws.raws.props[raws.prop_index[name]];
 
-        let mut eb = new_entity;
-        eb = eb.marked::<SimpleMarker<SerializeMe>>();
+        let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
         // Spawn in the specified location
-        eb = spawn_position(pos, eb);
+        eb = spawn_position(pos, eb, name, raws);
 
         // Renderable
         if let Some(renderable) = &prop_template.renderable {
@@ -323,13 +358,13 @@ pub fn spawn_named_prop(raws: &RawMaster, new_entity: EntityBuilder, name: &str,
 }
 
 /// Spawns a named entity
-pub fn spawn_named_entity(raws: &RawMaster, new_entity: EntityBuilder, name: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, name: &str, pos: SpawnType) -> Option<Entity> {
     if raws.item_index.contains_key(name) {
-        return spawn_named_item(raws, new_entity, name, pos);
+        return spawn_named_item(raws, ecs, name, pos);
     } else if raws.mob_index.contains_key(name) {
-        return spawn_named_mob(raws, new_entity, name, pos);
+        return spawn_named_mob(raws, ecs, name, pos);
     } else if raws.prop_index.contains_key(name) {
-        return spawn_named_prop(raws, new_entity, name, pos);
+        return spawn_named_prop(raws, ecs, name, pos);
     }
 
     None

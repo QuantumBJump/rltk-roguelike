@@ -105,6 +105,21 @@
             }
         },
         {
+            "name": "Rusty Longsword",
+            "renderable": {
+                "glyph": "/",
+                "fg": "#BB77BB",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Might",
+                "base_damage": "1d8-1",
+                "hit_bonus": -1
+            }
+        },
+        {
             "name": "Dagger",
             "renderable": {
                 "glyph": "/",
@@ -114,7 +129,9 @@
             },
             "weapon": {
                 "range": "melee",
-                "power_bonus": 2
+                "attribute": "Quickness",
+                "base_damage": "1d4",
+                "hit_bonus": 0
             }
         },
         {
@@ -127,7 +144,9 @@
             },
             "weapon": {
                 "range": "melee",
-                "power_bonus": 4
+                "attribute": "Might",
+                "base_damage": "1d8",
+                "hit_bonus": 0
             }
         },
         {
@@ -164,7 +183,9 @@
             },
             "weapon": {
                 "range": "melee",
-                "power_bonus": 5
+                "attribute": "Might",
+                "base_damage": "1d8+1",
+                "hit_bonus": 0
             }
         }
     ],
