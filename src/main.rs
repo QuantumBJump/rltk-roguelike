@@ -21,6 +21,8 @@ mod visibility_system;
 use visibility_system::VisibilitySystem;
 mod monster_ai_system;
 use monster_ai_system::MonsterAI;
+mod bystander_ai_system;
+use bystander_ai_system::BystanderAI;
 mod map_indexing_system;
 use map_indexing_system::MapIndexingSystem;
 mod melee_combat_system;
@@ -44,7 +46,7 @@ mod trigger_system;
 pub mod map_builders;
 
 // Constants
-const SHOW_MAPGEN_VISUALISER: bool = false;
+const SHOW_MAPGEN_VISUALISER: bool = true;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -75,8 +77,11 @@ impl State {
         let mut pickup = ItemCollectionSystem{};
         pickup.run_now(&self.ecs);
 
+        // AI systems
         let mut mob = MonsterAI{};
         mob.run_now(&self.ecs);
+        let mut bystander = BystanderAI{};
+        bystander.run_now(&self.ecs);
 
         let mut triggers = trigger_system::TriggerSystem{};
         triggers.run_now(&self.ecs);
@@ -397,7 +402,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
-        let mut builder = map_builders::random_builder(new_depth, &mut rng, 80, 43);
+        let mut builder = map_builders::level_builder(new_depth, &mut rng, 80, 43);
         builder.build_map(&mut rng);
         std::mem::drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -453,6 +458,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Player>();
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<Monster>();
+    gs.ecs.register::<Bystander>();
+    gs.ecs.register::<Vendor>();
     gs.ecs.register::<Name>();
     gs.ecs.register::<BlocksTile>();
     gs.ecs.register::<CombatStats>();
@@ -487,6 +494,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<RemembersPlayer>();
     gs.ecs.register::<BlocksVisibility>();
     gs.ecs.register::<Door>();
+    gs.ecs.register::<Quips>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 

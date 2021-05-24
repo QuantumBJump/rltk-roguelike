@@ -190,7 +190,12 @@ pub fn spawn_named_mob(raws: &RawMaster, new_entity: EntityBuilder, name: &str, 
 
         eb = eb.with(Name{ name: mob_template.name.clone() });
 
-        eb = eb.with(Monster{});
+        match mob_template.ai.as_ref() {
+            "melee" => eb = eb.with(Monster{}),
+            "bystander" => eb = eb.with(Bystander{}),
+            "vendor" => eb = eb.with(Vendor{}),
+            _ => {}
+        }
         if mob_template.blocks_tile {
             eb = eb.with(BlocksTile{});
         }
@@ -206,6 +211,11 @@ pub fn spawn_named_mob(raws: &RawMaster, new_entity: EntityBuilder, name: &str, 
                 max_memory: memory.max_memory,
                 memory: 0
             })
+        }
+        if let Some(quips) = &mob_template.quips {
+            eb = eb.with(Quips{
+                available: quips.clone()
+            });
         }
         eb = eb.with(Viewshed{ visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
 

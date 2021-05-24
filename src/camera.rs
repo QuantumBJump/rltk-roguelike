@@ -83,7 +83,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
         if map.visible_tiles[idx] {
             let entity_screen_x = pos.x - min_x;
             let entity_screen_y = pos.y - min_y;
-            if entity_screen_x > 0 && entity_screen_x < map_width && entity_screen_y > 0 && entity_screen_y < map_height {
+            if entity_screen_x >= 0 && entity_screen_x <= map_width && entity_screen_y >= 0 && entity_screen_y <= map_height {
                 ctx.set(entity_screen_x, entity_screen_y, render.fg, render.bg, render.glyph);
             }
         }
@@ -96,20 +96,21 @@ fn get_tile_glyph(idx: usize, map: &Map) -> (rltk::FontCharType, RGB, RGB) {
     let mut bg = RGB::from_f32(0., 0., 0.);
 
     match map.tiles[idx] {
-        TileType::Floor => {
-            glyph = rltk::to_cp437('.');
-            fg = RGB::from_f32(0.0, 0.5, 0.5);
-        }
+        TileType::Floor => { glyph = rltk::to_cp437('.'); fg = RGB::from_f32(0.0, 0.5, 0.5); }
+        TileType::WoodFloor => { glyph = rltk::to_cp437('.'); fg = RGB::named(rltk::CHOCOLATE); }
         TileType::Wall => {
             let x = idx as i32 % map.width;
             let y = idx as i32 / map.width;
             glyph = wall_glyph(&*map, x, y);
             fg = RGB::from_f32(0., 0.7, 0.);
         }
-        TileType::DownStairs => {
-            glyph = rltk::to_cp437('>');
-            fg = RGB::from_f32(0., 1.0, 1.0);
-        }
+        TileType::DownStairs => { glyph = rltk::to_cp437('>'); fg = RGB::from_f32(0., 1.0, 1.0); }
+        TileType::Bridge => { glyph = rltk::to_cp437('.'); fg = RGB::named(rltk::CHOCOLATE); }
+        TileType::Road => { glyph = rltk::to_cp437('≡'); fg = RGB::named(rltk::GREY); }
+        TileType::Grass => { glyph = rltk::to_cp437('"'); fg = RGB::named(rltk::GREEN); }
+        TileType::ShallowWater => { glyph = rltk::to_cp437('~'); fg = RGB::named(rltk::CYAN); }
+        TileType::DeepWater => { glyph = rltk::to_cp437('~'); fg = RGB::named(rltk::NAVY_BLUE); }
+        TileType::Gravel => { glyph = rltk::to_cp437(';'); fg = RGB::named(rltk::GREY); }
     }
     if map.bloodstains.contains(&idx) { bg = RGB::from_f32(0.75, 0., 0.); }
     if !map.visible_tiles[idx] {

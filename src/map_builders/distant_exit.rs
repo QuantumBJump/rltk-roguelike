@@ -28,8 +28,16 @@ impl DistantExit {
                 if distance_to_start != std::f32::MAX {
                     if distance_to_start > exit_tile.1 {
                         // If it's reachable & further away than our current exit candidate, move the exit candidate
-                        exit_tile.0 = i;
-                        exit_tile.1 = distance_to_start;
+                        let mut tile_empty = true;
+                        for (spawn_idx, _entity) in build_data.spawn_list.iter() {
+                            if i == *spawn_idx {
+                                tile_empty = false;
+                            }
+                        }
+                        if tile_empty {
+                            exit_tile.0 = i;
+                            exit_tile.1 = distance_to_start;
+                        }
                     }
                 }
             }

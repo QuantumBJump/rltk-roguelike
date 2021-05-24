@@ -51,13 +51,25 @@ pub struct HungerClock {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Monster {}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksVisibility {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Quips {
+    pub available: Vec<String>,
+}
+
+// AIs
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Monster {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Bystander {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Vendor {}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct RemembersPlayer {
