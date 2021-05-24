@@ -212,6 +212,11 @@ pub fn spawn_named_mob(raws: &RawMaster, new_entity: EntityBuilder, name: &str, 
                 memory: 0
             })
         }
+        if let Some(quips) = &mob_template.quips {
+            eb = eb.with(Quips{
+                available: quips.clone()
+            });
+        }
         eb = eb.with(Viewshed{ visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
 
         return Some(eb.build());

@@ -494,6 +494,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<RemembersPlayer>();
     gs.ecs.register::<BlocksVisibility>();
     gs.ecs.register::<Door>();
+    gs.ecs.register::<Quips>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 

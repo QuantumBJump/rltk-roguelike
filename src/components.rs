@@ -56,6 +56,11 @@ pub struct BlocksTile {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksVisibility {}
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Quips {
+    pub available: Vec<String>,
+}
+
 // AIs
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Monster {}
