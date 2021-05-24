@@ -8,6 +8,7 @@
     * Your mum's house
     * Several peasant houses
     * An abandoned house filled with rats!
+* Townsfolk will sometimes speak their mind when near you
 ## Bugfixes
 * You no longer accidentally murder your mother when you bump into her
 # v0.3.0 (2021/05/20)

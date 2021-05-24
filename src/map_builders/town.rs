@@ -64,6 +64,10 @@ impl TownBuilder {
         // Sort buildings by size (we want the largest building to be the pub)
         let building_size = self.sort_buildings(&buildings);
         self.building_factory(rng, build_data, &buildings, &building_size);
+
+        // Spawn outdoor NPCs
+        self.spawn_dockers(build_data, rng);
+        self.spawn_townsfolk(build_data, rng, &mut available_building_tiles);
     }
 
     fn grass_layer(&mut self, build_data: &mut BuilderMap) {
@@ -484,6 +488,33 @@ impl TownBuilder {
                 let idx = build_data.map.xy_idx(x, y);
                 if build_data.map.tiles[idx] == TileType::WoodFloor && idx != 0 && rng.roll_dice(1, 2)==1 {
                     build_data.spawn_list.push((idx, "Rat".to_string()));
+                }
+            }
+        }
+    }
+
+    fn spawn_dockers(&mut self, build_data: &mut BuilderMap, rng: &mut rltk::RandomNumberGenerator) {
+        for (idx, tt) in build_data.map.tiles.iter().enumerate() {
+            if *tt == TileType::Bridge && rng.roll_dice(1, 6) == 1 {
+                let roll = rng.roll_dice(1, 3);
+                match roll {
+                    1 => build_data.spawn_list.push((idx, "Dock Worker".to_string())),
+                    2 => build_data.spawn_list.push((idx, "Wannabe Pirate".to_string())),
+                    _ => build_data.spawn_list.push((idx, "Fisher".to_string())),
+                }
+            }
+        }
+    }
+
+    fn spawn_townsfolk(&mut self, build_data: &mut BuilderMap, rng: &mut rltk::RandomNumberGenerator, available_building_tiles: &mut HashSet<usize>) {
+        for idx in available_building_tiles.iter() {
+            if rng.roll_dice(1, 10) == 1{
+                let roll = rng.roll_dice(1, 4);
+                match roll {
+                    1 => build_data.spawn_list.push((*idx, "Peasant".to_string())),
+                    2 => build_data.spawn_list.push((*idx, "Drunk".to_string())),
+                    3 => build_data.spawn_list.push((*idx, "Dock Worker".to_string())),
+                    _ => build_data.spawn_list.push((*idx, "Fisher".to_string())),
                 }
             }
         }

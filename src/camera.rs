@@ -83,7 +83,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
         if map.visible_tiles[idx] {
             let entity_screen_x = pos.x - min_x;
             let entity_screen_y = pos.y - min_y;
-            if entity_screen_x > 0 && entity_screen_x < map_width && entity_screen_y > 0 && entity_screen_y < map_height {
+            if entity_screen_x >= 0 && entity_screen_x <= map_width && entity_screen_y >= 0 && entity_screen_y <= map_height {
                 ctx.set(entity_screen_x, entity_screen_y, render.fg, render.bg, render.glyph);
             }
         }
