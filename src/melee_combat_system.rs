@@ -2,7 +2,7 @@ use specs::prelude::*;
 use super::{
     Attributes, WantsToMelee, Name, SufferDamage, gamelog::GameLog,
     HungerClock, HungerState, particle_system::ParticleBuilder, Position,
-    Skills, Pools, Skill
+    Skills, Pools, Skill, Equipped, MeleeWeapon, WeaponAttribute, EquipmentSlot
 };
 use crate::{skill_bonus};
 
@@ -22,13 +22,15 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, HungerClock>,
         ReadStorage<'a, Pools>,
         WriteExpect<'a, rltk::RandomNumberGenerator>,
+        ReadStorage<'a, Equipped>,
+        ReadStorage<'a, MeleeWeapon>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (
             entities, mut log, mut wants_melee, names, attributes, skills,
             mut inflict_damage, mut particle_builder, positions, hunger_clock,
-            pools, mut rng
+            pools, mut rng, equipped_items, meleeweapons
         ) = data;
 
         for (entity, wants_melee, name, attacker_attributes, attacker_skills, attacker_pools) in (&entities, &wants_melee, &names, &attributes, &skills, &pools).join() {
@@ -39,11 +41,27 @@ impl<'a> System<'a> for MeleeCombatSystem {
             if attacker_pools.hit_points.current > 0 && target_pools.hit_points.current > 0 {
                 let target_name = names.get(wants_melee.target).unwrap();
 
+                let mut weapon_info = MeleeWeapon{
+                    attribute: WeaponAttribute::Might,
+                    hit_bonus: 0,
+                    damage_n_dice: 1,
+                    damage_die_type: 4,
+                    damage_bonus: 0
+                };
+
+                for (wielded, melee) in (&equipped_items, &meleeweapons).join() {
+                    if wielded.owner == entity && wielded.slot == EquipmentSlot::Melee {
+                        weapon_info = melee.clone();
+                    }
+                }
+
                 // Calculate attack roll
                 let natural_roll = rng.roll_dice(1, 20);
-                let attribute_hit_bonus = attacker_attributes.might.bonus;
+                let attribute_hit_bonus = if weapon_info.attribute == WeaponAttribute::Might
+                    { attacker_attributes.might.bonus }
+                    else { attacker_attributes.quickness.bonus };
                 let skill_hit_bonus = skill_bonus(Skill::Melee, &*attacker_skills);
-                let weapon_hit_bonus = 0; // TODO: Once weapons support this
+                let weapon_hit_bonus = weapon_info.hit_bonus;
                 let mut status_hit_bonus = 0;
                 if let Some(hc) = hunger_clock.get(entity) { // Well Fed grants +1
                     if hc.state == HungerState::WellFed {
@@ -62,10 +80,10 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 // Determine if the attack hits
                 if natural_roll != 1 && (natural_roll == 20 || modified_hit_roll > armour_class) {
                     // Target hit! Until we support weapons, we'll just deal 1d4 damage
-                    let base_damage = rng.roll_dice(1, 4);
+                    let base_damage = rng.roll_dice(weapon_info.damage_n_dice, weapon_info.damage_die_type);
                     let attr_damage_bonus = attacker_attributes.might.bonus;
                     let skill_damage_bonus = skill_bonus(Skill::Melee, &*attacker_skills);
-                    let weapon_damage_bonus = 0;
+                    let weapon_damage_bonus = weapon_info.damage_bonus;
 
                     let damage = i32::max(0, base_damage + attr_damage_bonus + skill_hit_bonus + skill_damage_bonus + weapon_damage_bonus);
                     SufferDamage::new_damage(&mut inflict_damage, wants_melee.target, damage);
