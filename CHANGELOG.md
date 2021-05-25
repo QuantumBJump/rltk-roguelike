@@ -12,6 +12,7 @@
 * Reworked melee combat to use a d20-like system
     * Implemented armour and weapons
     * Implemented spawning creatures with inventories
+    * Implemented natural armour and weaponry (Creatures with multiple natural weapons will choose one)
 ## Bugfixes
 * You no longer accidentally murder your mother when you bump into her
 * Monsters no longer pursue the player forever

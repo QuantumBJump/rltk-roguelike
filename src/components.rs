@@ -218,6 +218,21 @@ pub struct Wearable {
     pub slot: EquipmentSlot,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct NaturalAttack {
+    pub name: String,
+    pub damage_n_dice: i32,
+    pub damage_die_type: i32,
+    pub damage_bonus: i32,
+    pub hit_bonus: i32,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct NaturalAttackDefense {
+    pub armour_class: Option<i32>,
+    pub attacks: Vec<NaturalAttack>,
+}
+
 // Saving/loading
 pub struct SerializeMe;
 

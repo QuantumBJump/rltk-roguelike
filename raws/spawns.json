@@ -544,6 +544,12 @@
             "skills": {
                 "Melee": -1,
                 "Defense": -1
+            },
+            "natural": {
+                "armour_class": 11,
+                "attacks": [
+                    { "name": "bite", "hit_bonus": 0, "damage": "1d4" }
+                ]
             }
         },
         {

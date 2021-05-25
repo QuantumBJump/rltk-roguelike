@@ -311,6 +311,28 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, name: &str, pos: Spawn
         }
         eb = eb.with(Viewshed{ visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
 
+        if let Some(na) = &mob_template.natural {
+            let mut nature = NaturalAttackDefense{
+                armour_class: na.armour_class,
+                attacks: Vec::new()
+            };
+            if let Some(attacks) = &na.attacks {
+                for nattack in attacks.iter() {
+                    let (n, d, b) = parse_dice_string(&nattack.damage);
+                    let attack = NaturalAttack{
+                        name: nattack.name.clone(),
+                        hit_bonus: nattack.hit_bonus,
+                        damage_n_dice: n,
+                        damage_die_type: d,
+                        damage_bonus: b,
+                    };
+                    nature.attacks.push(attack);
+                }
+            }
+            eb = eb.with(nature);
+        }
+
+        // We've finished creating the entity - it can now be committed
         let new_mob = eb.build();
 
         // Are they equipped with anything?

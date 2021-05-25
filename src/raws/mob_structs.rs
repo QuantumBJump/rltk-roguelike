@@ -17,6 +17,7 @@ pub struct Mob {
     pub hp: Option<i32>,
     pub mana: Option<i32>,
     pub equipped: Option<Vec<String>>,
+    pub natural: Option<MobNatural>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -30,4 +31,17 @@ pub struct MobAttributes {
 #[derive(Deserialize, Debug)]
 pub struct MobMemory {
     pub max_memory: i32,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MobNatural {
+    pub armour_class: Option<i32>,
+    pub attacks: Option<Vec<NaturalAttack>>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct NaturalAttack {
+    pub name: String,
+    pub hit_bonus: i32,
+    pub damage: String
 }

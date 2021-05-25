@@ -43,7 +43,8 @@ pub fn save_game(ecs: &mut World) {
             Wearable, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
-            Bystander, Vendor, Quips, Attributes, Skills, Pools
+            Bystander, Vendor, Quips, Attributes, Skills, Pools,
+            NaturalAttackDefense
         );
     }
 }
@@ -94,7 +95,8 @@ pub fn load_game(ecs: &mut World) {
             Wearable, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
-            Bystander, Vendor, Quips, Attributes, Skills, Pools
+            Bystander, Vendor, Quips, Attributes, Skills, Pools,
+            NaturalAttackDefense
         );
     }
 
