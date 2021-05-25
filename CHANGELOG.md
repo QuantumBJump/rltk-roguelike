@@ -1,4 +1,4 @@
-# v0.4.0
+# v0.4.0 (2021/05/25)
 ## Features
 * Added raw file decoder to allow for easier definition of spawnable entities
 * Added a fishing town for your adventure to start in, containing:
