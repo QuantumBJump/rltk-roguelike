@@ -9,8 +9,15 @@
     * Several peasant houses
     * An abandoned house filled with rats!
 * Townsfolk will sometimes speak their mind when near you
+* Reworked melee combat to use a d20-like system
+    * Implemented armour and weapons
+    * Implemented spawning creatures with inventories
+    * Implemented natural armour and weaponry (Creatures with multiple natural weapons will choose one)
 ## Bugfixes
 * You no longer accidentally murder your mother when you bump into her
+* Monsters no longer pursue the player forever
+* Monsters can now see through open doors
+* The abandoned house in the starting village is no longer filled with an inordinate number of rats
 # v0.3.0 (2021/05/20)
 ## Features
 * Factored map building out into a module to improve extensibility

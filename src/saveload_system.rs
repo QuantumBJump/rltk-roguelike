@@ -36,14 +36,15 @@ pub fn save_game(ecs: &mut World) {
         let mut serializer = serde_json::Serializer::new(writer);
         serialize_individually!(ecs, serializer, data,
             Position, Renderable, Player, Viewshed, Monster, Name, BlocksTile,
-            CombatStats, SufferDamage, WantsToMelee, Item, Consumable, Ranged,
+            SufferDamage, WantsToMelee, Item, Consumable, Ranged,
             InflictsDamage, AreaOfEffect, Stunned, ProvidesHealing, InBackpack,
             WantsToPickupItem, WantsToUseItem, WantsToDropItem,
-            SerializationHelper, Equippable, Equipped, MeleePowerBonus,
-            DefenseBonus, WantsToRemoveItem, ParticleLifetime, HungerClock,
+            SerializationHelper, Equippable, Equipped, MeleeWeapon,
+            Wearable, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
-            Bystander, Vendor, Quips
+            Bystander, Vendor, Quips, Attributes, Skills, Pools,
+            NaturalAttackDefense
         );
     }
 }
@@ -87,14 +88,15 @@ pub fn load_game(ecs: &mut World) {
 
         deserialize_individually!(ecs, de, d,
             Position, Renderable, Player, Viewshed, Monster, Name, BlocksTile,
-            CombatStats, SufferDamage, WantsToMelee, Item, Consumable, Ranged,
+            SufferDamage, WantsToMelee, Item, Consumable, Ranged,
             InflictsDamage, AreaOfEffect, Stunned, ProvidesHealing, InBackpack,
             WantsToPickupItem, WantsToUseItem, WantsToDropItem,
-            SerializationHelper, Equippable, Equipped, MeleePowerBonus,
-            DefenseBonus, WantsToRemoveItem, ParticleLifetime, HungerClock,
+            SerializationHelper, Equippable, Equipped, MeleeWeapon,
+            Wearable, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
-            Bystander, Vendor, Quips
+            Bystander, Vendor, Quips, Attributes, Skills, Pools,
+            NaturalAttackDefense
         );
     }
 

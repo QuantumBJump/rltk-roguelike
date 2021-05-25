@@ -483,11 +483,17 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut rltk::RandomNumberGenerator
     ) {
+        let max_rats = 5;
+        let mut curr_rats = 0;
         for y in building.1 .. building.1 + building.3 {
             for x in building.0 .. building.0 + building.2 {
+                if curr_rats == max_rats {
+                    return
+                }
                 let idx = build_data.map.xy_idx(x, y);
                 if build_data.map.tiles[idx] == TileType::WoodFloor && idx != 0 && rng.roll_dice(1, 2)==1 {
                     build_data.spawn_list.push((idx, "Rat".to_string()));
+                    curr_rats += 1;
                 }
             }
         }
