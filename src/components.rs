@@ -182,7 +182,7 @@ pub struct MagicMapper {}
 
 // Equipment
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
-pub enum EquipmentSlot { Melee, Shield }
+pub enum EquipmentSlot { Melee, Shield, Head, Torso, Legs, Feet, Hands }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Equippable {
@@ -213,8 +213,9 @@ pub struct MeleeWeapon {
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
-pub struct DefenseBonus {
-    pub defense: i32,
+pub struct Wearable {
+    pub armour_class: f32,
+    pub slot: EquipmentSlot,
 }
 
 // Saving/loading

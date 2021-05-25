@@ -40,7 +40,7 @@ pub fn save_game(ecs: &mut World) {
             InflictsDamage, AreaOfEffect, Stunned, ProvidesHealing, InBackpack,
             WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             SerializationHelper, Equippable, Equipped, MeleeWeapon,
-            DefenseBonus, WantsToRemoveItem, ParticleLifetime, HungerClock,
+            Wearable, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
             Bystander, Vendor, Quips, Attributes, Skills, Pools
@@ -91,7 +91,7 @@ pub fn load_game(ecs: &mut World) {
             InflictsDamage, AreaOfEffect, Stunned, ProvidesHealing, InBackpack,
             WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             SerializationHelper, Equippable, Equipped, MeleeWeapon,
-            DefenseBonus, WantsToRemoveItem, ParticleLifetime, HungerClock,
+            Wearable, WantsToRemoveItem, ParticleLifetime, HungerClock,
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
             Bystander, Vendor, Quips, Attributes, Skills, Pools

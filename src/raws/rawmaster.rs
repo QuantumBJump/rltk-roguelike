@@ -77,10 +77,9 @@ fn find_slot_for_equippable_item(tag: &str, raws: &RawMaster) -> EquipmentSlot {
     let item = &raws.raws.items[item_index];
     if let Some(_wpn) = &item.weapon {
         return EquipmentSlot::Melee;
+    } else if let Some(wearable) = &item.wearable {
+        return string_to_slot(&wearable.slot);
     }
-    // else if let Some(wearable) = &item.wearable {
-    //     return string_to_slot(&wearable.slot);
-    // }
     panic!("Trying to equip {}, but it has no slot tag.", tag);
 }
 
@@ -112,6 +111,11 @@ fn get_renderable_component(renderable: &super::item_structs::Renderable) -> cra
 pub fn string_to_slot(slot: &str) -> EquipmentSlot {
     match slot {
         "Shield" => EquipmentSlot::Shield,
+        "Head" => EquipmentSlot::Head,
+        "Torso" => EquipmentSlot::Torso,
+        "Hands" => EquipmentSlot::Hands,
+        "Legs" => EquipmentSlot::Legs,
+        "Feet" => EquipmentSlot::Feet,
         "Melee" => EquipmentSlot::Melee,
         _ => { rltk::console::log(format!("Warning: unknown equipment slot type [{}]", slot)); EquipmentSlot::Melee }
     }
@@ -189,9 +193,10 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, name: &str, pos: Spaw
             }
             eb = eb.with(wpn)
         }
-        if let Some(shield) = &item_template.shield {
-            eb = eb.with(Equippable{ slot: EquipmentSlot::Shield });
-            eb = eb.with(DefenseBonus{ defense: shield.defense_bonus });
+        if let Some(wearable) = &item_template.wearable {
+            let slot = string_to_slot(&wearable.slot);
+            eb = eb.with(Equippable{ slot });
+            eb = eb.with(Wearable{ slot, armour_class: wearable.armour_class });
         }
 
         return Some(eb.build());
@@ -306,7 +311,16 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, name: &str, pos: Spawn
         }
         eb = eb.with(Viewshed{ visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
 
-        return Some(eb.build());
+        let new_mob = eb.build();
+
+        // Are they equipped with anything?
+        if let Some(wielding) = &mob_template.equipped {
+            for tag in wielding.iter() {
+                spawn_named_entity(raws, ecs, tag, SpawnType::Equipped{ by: new_mob });
+            }
+        }
+
+        return Some(new_mob);
     }
     None
 }
