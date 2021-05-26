@@ -1,3 +1,6 @@
+# v0.5.0
+## Features
+* Improved UI
 # v0.4.0 (2021/05/25)
 ## Features
 * Added raw file decoder to allow for easier definition of spawnable entities

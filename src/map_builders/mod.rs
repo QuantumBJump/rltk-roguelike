@@ -103,13 +103,13 @@ pub struct BuilderChain {
 }
 
 impl BuilderChain {
-    pub fn new(new_depth: i32, width: i32, height: i32) -> BuilderChain {
+    pub fn new<S: ToString>(new_depth: i32, width: i32, height: i32, name: S) -> BuilderChain {
         BuilderChain {
             starter: None,
             builders: Vec::new(),
             build_data: BuilderMap {
                 spawn_list: Vec::new(),
-                map: Map::new(new_depth, width, height),
+                map: Map::new(new_depth, width, height, name),
                 starting_position: None,
                 rooms: None,
                 corridors: None,
@@ -294,7 +294,7 @@ fn random_shape_builder(rng: &mut rltk::RandomNumberGenerator, builder: &mut Bui
 
 /// Randomly generate a map
 pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
-    let mut builder = BuilderChain::new(new_depth, width, height);
+    let mut builder = BuilderChain::new(new_depth, width, height, "New Map");
     // /*
     let type_roll = rng.roll_dice(1, 2);
     match type_roll {

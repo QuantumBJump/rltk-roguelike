@@ -399,7 +399,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
-        let mut builder = map_builders::level_builder(new_depth, &mut rng, 80, 43);
+        let mut builder = map_builders::level_builder(new_depth, &mut rng, 80, 44);
         builder.build_map(&mut rng);
         std::mem::drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -438,7 +438,8 @@ impl State {
 
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
-    let mut context = RltkBuilder::simple80x50()
+    let mut context = RltkBuilder::simple(80, 60)
+        .unwrap()
         .with_title("Roguelike Tutorial")
         .build()?;
     context.with_post_scanlines(true);
@@ -502,7 +503,7 @@ fn main() -> rltk::BError {
     raws::load_raws();
 
     // Add the map with placeholder values
-    gs.ecs.insert(Map::new(1, 64, 64));
+    gs.ecs.insert(Map::new(1, 64, 64, "New Map"));
     gs.ecs.insert(Point::new(0, 0));
 
     // Seed the rng

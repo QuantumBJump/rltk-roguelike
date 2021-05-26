@@ -1,14 +1,13 @@
 use specs::prelude::*;
-use super::{Map, TileType, Position, Renderable, Hidden, gui};
+use super::{Map, TileType, Position, Renderable, Hidden};
 use rltk::{Point, Rltk, RGB};
 
 const SHOW_BOUNDARIES: bool = true;
 const CONSTRAIN_CAMERA: bool = true;
 
-pub fn get_screen_bounds(ecs: &World, ctx: &mut Rltk) -> (i32, i32, i32, i32) {
+pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
-    let (x_chars, mut y_chars) = ctx.get_char_size();
-    y_chars -= gui::LOG_HEIGHT as u32;
+    let (x_chars, y_chars) = (48, 44);
 
     let center_x = (x_chars / 2) as i32;
     let center_y = (y_chars / 2) as i32;
