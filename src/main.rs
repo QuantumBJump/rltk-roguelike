@@ -16,6 +16,8 @@ pub use rect::Rect;
 mod rex_assets;
 pub mod camera;
 pub mod raws;
+pub mod options;
+pub use options::OPTIONS;
 
 mod visibility_system;
 use visibility_system::VisibilitySystem;
@@ -48,7 +50,6 @@ mod gamesystem;
 pub use gamesystem::*;
 
 // Constants
-const SHOW_MAPGEN_VISUALISER: bool = true;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory, ShowDropItem,
@@ -144,7 +145,8 @@ impl GameState for State {
 
         match newrunstate {
             RunState::MapGeneration => {
-                if SHOW_MAPGEN_VISUALISER {
+                let show_mapgen = OPTIONS.lock().unwrap().vis_mapgen;
+                if show_mapgen {
                     ctx.cls();
                     if self.mapgen_index < self.mapgen_history.len() { camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx); }
 
@@ -505,6 +507,9 @@ fn main() -> rltk::BError {
     // Add the map with placeholder values
     gs.ecs.insert(Map::new(1, 64, 64, "New Map"));
     gs.ecs.insert(Point::new(0, 0));
+
+    gs.ecs.insert(options::Options::new_default());
+    options::load_options();
 
     // Seed the rng
     gs.ecs.insert(rltk::RandomNumberGenerator::new());

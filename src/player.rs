@@ -4,7 +4,7 @@ use super::{
     Position, Player, State, Map, Viewshed, RunState, Pools,
     WantsToMelee, Item, gamelog::GameLog, WantsToPickupItem, TileType, Monster,
     HungerClock, HungerState, EntityMoved, Door, BlocksVisibility, BlocksTile,
-    Renderable, Bystander, Vendor
+    Renderable, Bystander, Vendor, options::OPTIONS, options::KeybindType,
 };
 use std::cmp::{min, max};
 
@@ -230,56 +230,64 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     // Player movement
     match ctx.key {
         None => { return RunState::AwaitingInput } // Nothing happened
-        Some(key) => match key {
-            // Wait button
-            VirtualKeyCode::Numpad5 => { return skip_turn(&mut gs.ecs) },
+        Some(key) => {
+            let keybinds = OPTIONS.lock().unwrap().keybinds;
+            match (keybinds, key) {
+                // Wait button
+                (KeybindType::Numpad, VirtualKeyCode::Numpad5) |
+                (KeybindType::Vi, VirtualKeyCode::Semicolon) => { return skip_turn(&mut gs.ecs) },
 
-            // Collect item
-            VirtualKeyCode::G => get_item(&mut gs.ecs),
+                // Collect item
+                (_, VirtualKeyCode::G) => get_item(&mut gs.ecs),
 
-            // Open inventory
-            VirtualKeyCode::I => return RunState::ShowInventory,
+                // Open inventory
+                (_, VirtualKeyCode::I) => return RunState::ShowInventory,
 
-            // Drop item
-            VirtualKeyCode::D => return RunState::ShowDropItem,
+                // Drop item
+                (_, VirtualKeyCode::D) => return RunState::ShowDropItem,
 
-            // Remove equipped item
-            VirtualKeyCode::R => return RunState::ShowRemoveItem,
+                // Remove equipped item
+                (_, VirtualKeyCode::R) => return RunState::ShowRemoveItem,
 
-            // Cardinal directions
-            VirtualKeyCode::Left |
-            VirtualKeyCode::Numpad4 |
-            VirtualKeyCode::H => try_move_player(-1, 0, &mut gs.ecs),
+                // Cardinal directions
+                (_, VirtualKeyCode::Left) |
+                (KeybindType::Numpad, VirtualKeyCode::Numpad4) |
+                (KeybindType::Vi, VirtualKeyCode::H) => try_move_player(-1, 0, &mut gs.ecs),
 
-            VirtualKeyCode::Right |
-            VirtualKeyCode::Numpad6 |
-            VirtualKeyCode::L => try_move_player(1, 0, &mut gs.ecs),
+                (_, VirtualKeyCode::Right) |
+                (KeybindType::Numpad, VirtualKeyCode::Numpad6) |
+                (KeybindType::Vi, VirtualKeyCode::L) => try_move_player(1, 0, &mut gs.ecs),
 
-            VirtualKeyCode::Up |
-            VirtualKeyCode::Numpad8 |
-            VirtualKeyCode::K => try_move_player(0, -1, &mut gs.ecs),
+                (_, VirtualKeyCode::Up) |
+                (KeybindType::Numpad, VirtualKeyCode::Numpad8) |
+                (KeybindType::Vi, VirtualKeyCode::K) => try_move_player(0, -1, &mut gs.ecs),
 
-            VirtualKeyCode::Down |
-            VirtualKeyCode::Numpad2 |
-            VirtualKeyCode::J => try_move_player(0, 1, &mut gs.ecs),
+                (_, VirtualKeyCode::Down) |
+                (KeybindType::Numpad, VirtualKeyCode::Numpad2) |
+                (KeybindType::Vi, VirtualKeyCode::J) => try_move_player(0, 1, &mut gs.ecs),
 
-            // Diagonal movement
-            VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
+                // Diagonal movement
+                (KeybindType::Numpad, VirtualKeyCode::Numpad1) |
+                (KeybindType::Vi, VirtualKeyCode::N) => try_move_player(-1, 1, &mut gs.ecs),
+                (KeybindType::Numpad, VirtualKeyCode::Numpad3) |
+                (KeybindType::Vi, VirtualKeyCode::M) => try_move_player(1, 1, &mut gs.ecs),
+                (KeybindType::Numpad, VirtualKeyCode::Numpad7) |
+                (KeybindType::Vi, VirtualKeyCode::Y) => try_move_player(-1, -1, &mut gs.ecs),
+                (KeybindType::Numpad, VirtualKeyCode::Numpad9) |
+                (KeybindType::Vi, VirtualKeyCode::U) => try_move_player(1, -1, &mut gs.ecs),
 
-            // Level changes
-            VirtualKeyCode::Period => {
-                if try_next_level(&mut gs.ecs) {
-                    return RunState::NextLevel;
+                // Level changes
+                (_, VirtualKeyCode::Period) => {
+                    if try_next_level(&mut gs.ecs) {
+                        return RunState::NextLevel;
+                    }
                 }
+
+                // Menu
+                (_, VirtualKeyCode::Escape) => return RunState::SaveGame,
+
+                _ => { return RunState::AwaitingInput } // Key not recognised
             }
-
-            // Menu
-            VirtualKeyCode::Escape => return RunState::SaveGame,
-
-            _ => { return RunState::AwaitingInput } // Key not recognised
         }
     }
     RunState::PlayerTurn

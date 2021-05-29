@@ -1,6 +1,6 @@
 use super::{
-    Map, Rect, TileType, Position, World, spawner, SHOW_MAPGEN_VISUALISER,
-    tile_walkable
+    Map, Rect, TileType, Position, World, spawner,
+    tile_walkable, OPTIONS
 };
 mod simple_map;
 use simple_map::SimpleMapBuilder;
@@ -82,7 +82,8 @@ pub struct BuilderMap {
 
 impl BuilderMap {
     fn take_snapshot(&mut self) {
-        if SHOW_MAPGEN_VISUALISER {
+        let show_mapgen = OPTIONS.lock().unwrap().vis_mapgen;
+        if show_mapgen {
             let mut snapshot = self.map.clone();
             for v in snapshot.revealed_tiles.iter_mut() {
                 *v = true;
