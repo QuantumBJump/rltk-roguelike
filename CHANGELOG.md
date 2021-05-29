@@ -1,6 +1,10 @@
 # v0.5.0
 ## Features
 * Improved UI
+* Added forest level outside town
+* Added options system using options.json
+* Added WASD keybindings
+* Refactored player input code
 # v0.4.0 (2021/05/25)
 ## Features
 * Added raw file decoder to allow for easier definition of spawnable entities

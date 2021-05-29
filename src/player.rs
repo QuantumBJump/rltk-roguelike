@@ -8,6 +8,81 @@ use super::{
 };
 use std::cmp::{min, max};
 
+#[derive(PartialEq, Copy, Clone)]
+enum Command {
+    Move{x: i32, y: i32},
+    Wait,
+    Get,
+    Inventory,
+    Drop,
+    Remove,
+    Menu,
+    Descend,
+    Undefined,
+}
+
+fn key_to_command(key: VirtualKeyCode) -> Command {
+    let keybinds = OPTIONS.lock().unwrap().keybinds;
+    match keybinds {
+        // Match the keys which differ between keybind setups
+        KeybindType::Vi => {
+            match key {
+                VirtualKeyCode::H => return Command::Move{x: -1,y: 0},
+                VirtualKeyCode::J => return Command::Move{x: 0, y: 1},
+                VirtualKeyCode::K => return Command::Move{x: 0, y: -1},
+                VirtualKeyCode::L => return Command::Move{x: 1, y: 0},
+                VirtualKeyCode::Y => return Command::Move{x: -1, y: -1},
+                VirtualKeyCode::U => return Command::Move{x: 1, y: -1},
+                VirtualKeyCode::N => return Command::Move{x: -1, y: 1},
+                VirtualKeyCode::M => return Command::Move{x: 1, y: 1},
+                VirtualKeyCode::Semicolon => return Command::Wait,
+                VirtualKeyCode::D => return Command::Drop,
+                _ => {}
+            }
+        }
+        KeybindType::Numpad => {
+            match key {
+                VirtualKeyCode::Numpad4 => return Command::Move{x: -1,y: 0},
+                VirtualKeyCode::Numpad6 => return Command::Move{x: 0, y: 1},
+                VirtualKeyCode::Numpad8 => return Command::Move{x: 0, y: -1},
+                VirtualKeyCode::Numpad2 => return Command::Move{x: 1, y: 0},
+                VirtualKeyCode::Numpad7 => return Command::Move{x: -1, y: -1},
+                VirtualKeyCode::Numpad9 => return Command::Move{x: 1, y: -1},
+                VirtualKeyCode::Numpad1 => return Command::Move{x: -1, y: 1},
+                VirtualKeyCode::Numpad3 => return Command::Move{x: 1, y: 1},
+                VirtualKeyCode::Numpad5 => return Command::Wait,
+                VirtualKeyCode::D => return Command::Drop,
+                _ => {}
+            }
+        }
+        KeybindType::Wasd => {
+            match key {
+                VirtualKeyCode::A => return Command::Move{x: -1,y: 0},
+                VirtualKeyCode::S => return Command::Move{x: 0, y: 1},
+                VirtualKeyCode::W => return Command::Move{x: 0, y: -1},
+                VirtualKeyCode::D => return Command::Move{x: 1, y: 0},
+                VirtualKeyCode::Q => return Command::Move{x: -1, y: -1},
+                VirtualKeyCode::E => return Command::Move{x: 1, y: -1},
+                VirtualKeyCode::Z => return Command::Move{x: -1, y: 1},
+                VirtualKeyCode::C => return Command::Move{x: 1, y: 1},
+                VirtualKeyCode::X => return Command::Wait,
+                VirtualKeyCode::T => return Command::Drop,
+                _ => {}
+            }
+        }
+    }
+    match key {
+        // Match keycodes which are the same between setups
+        VirtualKeyCode::Escape => return Command::Menu,
+        VirtualKeyCode::Period => return Command::Descend,
+        VirtualKeyCode::G => return Command::Get,
+        VirtualKeyCode::I => return Command::Inventory,
+        VirtualKeyCode::R => return Command::Remove,
+        _ => {}
+    }
+    return Command::Undefined;
+}
+
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
     let players = ecs.read_storage::<Player>();
@@ -231,60 +306,35 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     match ctx.key {
         None => { return RunState::AwaitingInput } // Nothing happened
         Some(key) => {
-            let keybinds = OPTIONS.lock().unwrap().keybinds;
-            match (keybinds, key) {
+            let command = key_to_command(key);
+            match command {
                 // Wait button
-                (KeybindType::Numpad, VirtualKeyCode::Numpad5) |
-                (KeybindType::Vi, VirtualKeyCode::Semicolon) => { return skip_turn(&mut gs.ecs) },
+                Command::Wait => return skip_turn(&mut gs.ecs),
 
                 // Collect item
-                (_, VirtualKeyCode::G) => get_item(&mut gs.ecs),
+                Command::Get => get_item(&mut gs.ecs),
 
                 // Open inventory
-                (_, VirtualKeyCode::I) => return RunState::ShowInventory,
+                Command::Inventory => return RunState::ShowInventory,
 
                 // Drop item
-                (_, VirtualKeyCode::D) => return RunState::ShowDropItem,
+                Command::Drop => return RunState::ShowDropItem,
 
                 // Remove equipped item
-                (_, VirtualKeyCode::R) => return RunState::ShowRemoveItem,
+                Command::Remove => return RunState::ShowRemoveItem,
 
-                // Cardinal directions
-                (_, VirtualKeyCode::Left) |
-                (KeybindType::Numpad, VirtualKeyCode::Numpad4) |
-                (KeybindType::Vi, VirtualKeyCode::H) => try_move_player(-1, 0, &mut gs.ecs),
-
-                (_, VirtualKeyCode::Right) |
-                (KeybindType::Numpad, VirtualKeyCode::Numpad6) |
-                (KeybindType::Vi, VirtualKeyCode::L) => try_move_player(1, 0, &mut gs.ecs),
-
-                (_, VirtualKeyCode::Up) |
-                (KeybindType::Numpad, VirtualKeyCode::Numpad8) |
-                (KeybindType::Vi, VirtualKeyCode::K) => try_move_player(0, -1, &mut gs.ecs),
-
-                (_, VirtualKeyCode::Down) |
-                (KeybindType::Numpad, VirtualKeyCode::Numpad2) |
-                (KeybindType::Vi, VirtualKeyCode::J) => try_move_player(0, 1, &mut gs.ecs),
-
-                // Diagonal movement
-                (KeybindType::Numpad, VirtualKeyCode::Numpad1) |
-                (KeybindType::Vi, VirtualKeyCode::N) => try_move_player(-1, 1, &mut gs.ecs),
-                (KeybindType::Numpad, VirtualKeyCode::Numpad3) |
-                (KeybindType::Vi, VirtualKeyCode::M) => try_move_player(1, 1, &mut gs.ecs),
-                (KeybindType::Numpad, VirtualKeyCode::Numpad7) |
-                (KeybindType::Vi, VirtualKeyCode::Y) => try_move_player(-1, -1, &mut gs.ecs),
-                (KeybindType::Numpad, VirtualKeyCode::Numpad9) |
-                (KeybindType::Vi, VirtualKeyCode::U) => try_move_player(1, -1, &mut gs.ecs),
+                // Movement
+                Command::Move{x, y} => try_move_player(x, y, &mut gs.ecs),
 
                 // Level changes
-                (_, VirtualKeyCode::Period) => {
+                Command::Descend => {
                     if try_next_level(&mut gs.ecs) {
                         return RunState::NextLevel;
                     }
                 }
 
                 // Menu
-                (_, VirtualKeyCode::Escape) => return RunState::SaveGame,
+                Command::Menu => return RunState::SaveGame,
 
                 _ => { return RunState::AwaitingInput } // Key not recognised
             }

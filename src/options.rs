@@ -15,7 +15,8 @@ const DEFAULT_OPTIONS: Options = Options {
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum KeybindType {
     Vi,
-    Numpad
+    Numpad,
+    Wasd
 }
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
