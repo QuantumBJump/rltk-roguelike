@@ -232,7 +232,8 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
         None => { return RunState::AwaitingInput } // Nothing happened
         Some(key) => match key {
             // Wait button
-            VirtualKeyCode::Numpad5 => { return skip_turn(&mut gs.ecs) },
+            VirtualKeyCode::Numpad5 |
+            VirtualKeyCode::Semicolon => { return skip_turn(&mut gs.ecs) },
 
             // Collect item
             VirtualKeyCode::G => get_item(&mut gs.ecs),
@@ -264,10 +265,14 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::J => try_move_player(0, 1, &mut gs.ecs),
 
             // Diagonal movement
-            VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad1 |
+            VirtualKeyCode::N => try_move_player(-1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad3 |
+            VirtualKeyCode::M => try_move_player(1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad7 |
+            VirtualKeyCode::Y => try_move_player(-1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad9 |
+            VirtualKeyCode::U => try_move_player(1, -1, &mut gs.ecs),
 
             // Level changes
             VirtualKeyCode::Period => {
