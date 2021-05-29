@@ -5,6 +5,8 @@ use serde::{ Serialize, Deserialize, };
 
 mod tiletype;
 pub use tiletype::{TileType, tile_walkable, tile_opaque, tile_cost};
+mod themes;
+pub use themes::*;
 
 
 #[derive(Default, Serialize, Deserialize, Clone)]
