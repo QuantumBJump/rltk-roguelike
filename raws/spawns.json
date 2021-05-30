@@ -1,19 +1,23 @@
 {
     "spawn_table": [
-        { "name": "Goblin", "weight": 10, "min_depth": 0, "max_depth": 100 },
-        { "name": "Orc", "weight": 1, "min_depth": 0, "max_depth": 100, "add_map_depth_to_weight": true },
+        { "name": "Goblin", "weight": 10, "min_depth": 3, "max_depth": 100 },
+        { "name": "Orc", "weight": 1, "min_depth": 3, "max_depth": 100, "add_map_depth_to_weight": true },
         { "name": "Health Potion", "weight": 7, "min_depth": 0, "max_depth": 100 },
         { "name": "Fireball Scroll", "weight": 2, "min_depth": 0, "max_depth": 100, "add_map_depth_to_weight": true },
         { "name": "Stun Scroll", "weight": 2, "min_depth": 0, "max_depth": 100, "add_map_depth_to_weight": true },
         { "name": "Magic Missile Scroll", "weight": 4, "min_depth": 0, "max_depth": 100},
         { "name": "Dagger", "weight": 3, "min_depth": 0, "max_depth": 100},
         { "name": "Buckler", "weight": 3, "min_depth": 0, "max_depth": 100},
-        { "name": "Longsword", "weight": 1, "min_depth": 1, "max_depth": 100},
-        { "name": "Tower Shield", "weight": 1, "min_depth": 1, "max_depth": 100},
+        { "name": "Longsword", "weight": 1, "min_depth": 3, "max_depth": 100},
+        { "name": "Tower Shield", "weight": 1, "min_depth": 3, "max_depth": 100},
         { "name": "Rations", "weight": 10, "min_depth": 0, "max_depth": 100 },
         { "name": "Bear Trap", "weight": 5, "min_depth": 0, "max_depth": 100 },
-        { "name": "Battleaxe", "weight": 1, "min_depth": 2, "max_depth": 100 },
-        { "name": "Kobold", "weight": 15, "min_depth": 0, "max_depth": 3}
+        { "name": "Battleaxe", "weight": 1, "min_depth": 6, "max_depth": 100 },
+        { "name": "Kobold", "weight": 15, "min_depth": 3, "max_depth": 3},
+        { "name": "Rat", "weight": 15, "min_depth": 2, "max_depth": 3},
+        { "name": "Fox", "weight": 15, "min_depth": 2, "max_depth": 3},
+        { "name": "Mangy Wolf", "weight": 13, "min_depth": 2, "max_depth": 3},
+        { "name": "Deer", "weight": 14, "min_depth": 2, "max_depth": 3}
     ],
     "items": [
         {
@@ -532,7 +536,7 @@
                 "order": 1
             },
             "blocks_tile": true,
-            "vision_range": 8,
+            "vision_range": 4,
             "ai": "melee",
             "memory": {
                 "max_memory": 1
@@ -549,6 +553,93 @@
                 "armour_class": 11,
                 "attacks": [
                     { "name": "bite", "hit_bonus": 0, "damage": "1d4" }
+                ]
+            }
+        },
+        {
+            "name": "Mangy Wolf",
+            "renderable": {
+                "glyph": "w",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "ai": "melee",
+            "memory": {
+                "max_memory": 4
+            },
+            "attributes": {
+                "Might": 3,
+                "Fitness": 3
+            },
+            "skills": {
+                "Melee": -1,
+                "Defense": -1
+            },
+            "natural": {
+                "armour_class": 12,
+                "attacks": [
+                    { "name": "bite", "hit_bonus": 0, "damage": "1d6" }
+                ]
+            }
+        },
+        {
+            "name": "Fox",
+            "renderable": {
+                "glyph": "f",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "ai": "melee",
+            "memory": {
+                "max_memory": 4
+            },
+            "attributes": {
+                "Might": 3,
+                "Fitness": 3
+            },
+            "skills": {
+                "Melee": -1,
+                "Defense": -1
+            },
+            "natural": {
+                "armour_class": 11,
+                "attacks": [
+                    { "name": "bite", "hit_bonus": 0, "damage": "1d4" }
+                ]
+            }
+        },
+        {
+            "name": "Deer",
+            "renderable": {
+                "glyph": "d",
+                "fg": "#FFFF00",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "ai": "bystander",
+            "memory": {
+                "max_memory": 4
+            },
+            "attributes": {
+                "Might": 3,
+                "Fitness": 3
+            },
+            "skills": {
+                "Melee": -1,
+                "Defense": -1
+            },
+            "natural": {
+                "armour_class": 11,
+                "attacks": [
+                    { "name": "headbutt", "hit_bonus": 0, "damage": "1d8" }
                 ]
             }
         },
