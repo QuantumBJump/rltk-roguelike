@@ -10,6 +10,9 @@ mod spawn_table_structs;
 use spawn_table_structs::*;
 mod rawmaster;
 pub use rawmaster::*;
+mod loot_structs;
+use loot_structs::*;
+
 use std::sync::Mutex;
 use serde::{Deserialize};
 
@@ -23,6 +26,7 @@ pub struct Raws {
     pub mobs: Vec<Mob>,
     pub props: Vec<Prop>,
     pub spawn_table: Vec<SpawnTableEntry>,
+    pub loot_tables: Vec<LootTable>,
 }
 
 pub fn load_raws() {

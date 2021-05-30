@@ -19,16 +19,24 @@ pub struct RawMaster {
     item_index: HashMap<String, usize>,
     mob_index: HashMap<String, usize>,
     prop_index: HashMap<String, usize>,
+    loot_index: HashMap<String, usize>,
 }
 
 impl RawMaster {
     /// Creates a new empty RawMaster
     pub fn empty() -> RawMaster {
         RawMaster {
-            raws: Raws{ items: Vec::new(), mobs: Vec::new(), props: Vec::new(), spawn_table: Vec::new() },
+            raws: Raws{
+                items: Vec::new(),
+                mobs: Vec::new(),
+                props: Vec::new(),
+                spawn_table: Vec::new(),
+                loot_tables: Vec::new()
+            },
             item_index: HashMap::new(),
             mob_index: HashMap::new(),
             prop_index: HashMap::new(),
+            loot_index: HashMap::new(),
         }
     }
 
@@ -58,6 +66,9 @@ impl RawMaster {
             }
             self.prop_index.insert(prop.name.clone(), i);
             used_names.insert(prop.name.clone());
+        }
+        for (i, loot) in self.raws.loot_tables.iter().enumerate() {
+            self.loot_index.insert(loot.name.clone(), i);
         }
 
         for spawn in self.raws.spawn_table.iter() {
@@ -311,6 +322,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, name: &str, pos: Spawn
         }
         eb = eb.with(Viewshed{ visible_tiles: Vec::new(), range: mob_template.vision_range, dirty: true });
 
+        // Add natural weapons
         if let Some(na) = &mob_template.natural {
             let mut nature = NaturalAttackDefense{
                 armour_class: na.armour_class,
@@ -330,6 +342,11 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, name: &str, pos: Spawn
                 }
             }
             eb = eb.with(nature);
+        }
+
+        // Do they have a loot table?
+        if let Some(loot) = &mob_template.loot_table {
+            eb = eb.with(LootTable{table: loot.clone()});
         }
 
         // We've finished creating the entity - it can now be committed
@@ -403,6 +420,19 @@ pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, name: &str, pos: Sp
         return spawn_named_prop(raws, ecs, name, pos);
     }
 
+    None
+}
+
+/// Gets an item drop from a loot table
+pub fn get_item_drop(raws: &RawMaster, rng: &mut rltk::RandomNumberGenerator, table: &str) -> Option<String> {
+    if raws.loot_index.contains_key(table) {
+        let mut rt = RandomTable::new();
+        let available_options = &raws.raws.loot_tables[raws.loot_index[table]];
+        for item in available_options.drops.iter() {
+            rt = rt.add(item.name.clone(), item.weight);
+        }
+        return Some(rt.roll(rng));
+    }
     None
 }
 

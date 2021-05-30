@@ -498,6 +498,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Skills>();
     gs.ecs.register::<Pools>();
     gs.ecs.register::<NaturalAttackDefense>();
+    gs.ecs.register::<LootTable>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
