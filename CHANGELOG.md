@@ -1,3 +1,6 @@
+# v0.5.1
+## Bugfixes
+* Animals are no longer immune to being stunned
 # v0.5.0
 ## Features
 * Added forest level outside town
