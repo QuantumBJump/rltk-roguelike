@@ -100,6 +100,11 @@ pub struct Quips {
     pub available: Vec<String>,
 }
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct LootTable {
+    pub table: String,
+}
+
 // AIs
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Monster {}
@@ -109,6 +114,12 @@ pub struct Bystander {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Vendor {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Carnivore {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Herbivore {}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct RemembersPlayer {

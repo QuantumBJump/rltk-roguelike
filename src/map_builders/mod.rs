@@ -20,6 +20,8 @@ mod common;
 use common::*;
 mod town;
 use town::town_builder;
+mod forest;
+use forest::forest_builder;
 mod voronoi;
 use voronoi::VoronoiCellBuilder;
 mod prefab_builder;
@@ -330,6 +332,7 @@ pub fn level_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, widt
     rltk::console::log(format!("Depth: {}", new_depth));
     match new_depth {
         1 => town_builder(new_depth, rng, width, height),
+        2 => forest_builder(new_depth, rng, width, height),
         _ => random_builder(new_depth, rng, width, height)
     }
 }
