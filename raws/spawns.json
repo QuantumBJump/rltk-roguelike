@@ -642,7 +642,7 @@
             },
             "blocks_tile": true,
             "vision_range": 8,
-            "ai": "melee",
+            "ai": "carnivore",
             "memory": {
                 "max_memory": 4
             },
@@ -701,7 +701,7 @@
             },
             "blocks_tile": true,
             "vision_range": 8,
-            "ai": "bystander",
+            "ai": "herbivore",
             "memory": {
                 "max_memory": 4
             },

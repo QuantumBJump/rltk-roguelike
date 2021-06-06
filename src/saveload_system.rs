@@ -44,7 +44,7 @@ pub fn save_game(ecs: &mut World) {
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
             Bystander, Vendor, Quips, Attributes, Skills, Pools,
-            NaturalAttackDefense, LootTable
+            NaturalAttackDefense, LootTable, Carnivore, Herbivore
         );
     }
 }
@@ -96,7 +96,7 @@ pub fn load_game(ecs: &mut World) {
             ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved,
             SingleActivation, RemembersPlayer, BlocksVisibility, Door,
             Bystander, Vendor, Quips, Attributes, Skills, Pools,
-            NaturalAttackDefense, LootTable
+            NaturalAttackDefense, LootTable, Carnivore, Herbivore
         );
     }
 

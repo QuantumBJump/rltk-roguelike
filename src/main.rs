@@ -25,6 +25,8 @@ mod monster_ai_system;
 use monster_ai_system::MonsterAI;
 mod bystander_ai_system;
 use bystander_ai_system::BystanderAI;
+mod animal_ai_system;
+use animal_ai_system::AnimalAI;
 mod map_indexing_system;
 use map_indexing_system::MapIndexingSystem;
 mod melee_combat_system;
@@ -85,6 +87,8 @@ impl State {
         mob.run_now(&self.ecs);
         let mut bystander = BystanderAI{};
         bystander.run_now(&self.ecs);
+        let mut animal = AnimalAI{};
+        animal.run_now(&self.ecs);
 
         let mut triggers = trigger_system::TriggerSystem{};
         triggers.run_now(&self.ecs);
@@ -453,29 +457,36 @@ fn main() -> rltk::BError {
         mapgen_timer: 0.0,
     };
     // Component registration
+    // General entity properties
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
-    gs.ecs.register::<Viewshed>();
+    gs.ecs.register::<SufferDamage>();
+    // AIs
     gs.ecs.register::<Monster>();
     gs.ecs.register::<Bystander>();
     gs.ecs.register::<Vendor>();
+    gs.ecs.register::<Carnivore>();
+    gs.ecs.register::<Herbivore>();
+    // Mob properties
     gs.ecs.register::<Name>();
+    gs.ecs.register::<Viewshed>();
     gs.ecs.register::<BlocksTile>();
+    gs.ecs.register::<Stunned>();
+    // Intents
     gs.ecs.register::<WantsToMelee>();
-    gs.ecs.register::<SufferDamage>();
-    gs.ecs.register::<Item>();
-    gs.ecs.register::<ProvidesHealing>();
-    gs.ecs.register::<InBackpack>();
     gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<WantsToDropItem>();
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<WantsToRemoveItem>();
+    // Item properties
+    gs.ecs.register::<Item>();
+    gs.ecs.register::<ProvidesHealing>();
+    gs.ecs.register::<InBackpack>();
     gs.ecs.register::<Consumable>();
     gs.ecs.register::<Ranged>();
     gs.ecs.register::<InflictsDamage>();
     gs.ecs.register::<AreaOfEffect>();
-    gs.ecs.register::<Stunned>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<Equippable>();

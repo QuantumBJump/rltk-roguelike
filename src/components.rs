@@ -115,6 +115,12 @@ pub struct Bystander {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Vendor {}
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Carnivore {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Herbivore {}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct RemembersPlayer {
     // How long the enemy will continue to pursue the player after losing sight.
