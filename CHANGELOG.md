@@ -2,6 +2,9 @@
 ## Features
 * Improved UI
 * Added forest level outside town
+  * Added deer, wolves, and foxes
+  * Added bandits
+* Enemies can now drop items when they die
 * Added options system using options.json
 * Added WASD keybindings
 * Refactored player input code
