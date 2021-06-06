@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use super::{
     Viewshed, Monster, RunState, WantsToMelee, Map, Position, Stunned,
-    particle_system::ParticleBuilder, EntityMoved, RemembersPlayer, GameLog
+    particle_system::ParticleBuilder, EntityMoved, RemembersPlayer,
 };
 use rltk::{Point};
 
@@ -21,7 +21,6 @@ impl <'a> System<'a> for MonsterAI {
                         WriteExpect<'a, ParticleBuilder>,
                         WriteStorage<'a, EntityMoved>,
                         WriteStorage<'a, RemembersPlayer>,
-                        WriteExpect<'a, GameLog>,
                     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -29,7 +28,7 @@ impl <'a> System<'a> for MonsterAI {
             mut map, player_pos, player_entity, runstate, entities,
             mut viewshed, monster, mut position, mut wants_to_melee,
             mut stunned, mut particle_builder, mut entity_moved,
-            mut remembers_player, mut log
+            mut remembers_player,
         ) = data;
 
         if *runstate != RunState::MonsterTurn { return; } // Only move on monster's turn.
@@ -86,7 +85,6 @@ impl <'a> System<'a> for MonsterAI {
                     let remembers = remembers_player.get_mut(entity);
                     if let Some(remembers) = remembers {
                         if remembers.memory > 0 {
-                            log.entries.push(format!("monster still remembers player for {} turns.", remembers.memory));
                             let path = rltk::a_star_search(
                                 map.xy_idx(pos.x, pos.y),
                                 map.xy_idx(player_pos.x, player_pos.y),
@@ -103,9 +101,6 @@ impl <'a> System<'a> for MonsterAI {
                                 viewshed.dirty = true;
                             }
                             remembers.memory -= 1;
-                            if remembers.memory == 0 {
-                                log.entries.push("monster forgets player!".to_string());
-                            }
                         }
                     }
                 }

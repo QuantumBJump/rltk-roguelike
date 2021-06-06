@@ -1,13 +1,17 @@
 # v0.5.0
 ## Features
-* Improved UI
 * Added forest level outside town
   * Added deer, wolves, and foxes
   * Added bandits
-* Enemies can now drop items when they die
+* Combat system
+  * Enemies can now drop items when they die
+* Improved UI
 * Added options system using options.json
 * Added WASD keybindings
 * Refactored player input code
+## Bugfixes
+* Bystanders no longer phase through the player
+* Monsters no longer constantly report the state of their memory
 # v0.4.0 (2021/05/25)
 ## Features
 * Added raw file decoder to allow for easier definition of spawnable entities
