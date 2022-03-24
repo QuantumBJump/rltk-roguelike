@@ -64,6 +64,7 @@ pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventor
     MagicMapReveal{ row: i32 },
     MapGeneration,
     Wait,
+    ShowHelp,
 }
 
 pub struct State{
@@ -290,6 +291,16 @@ impl GameState for State {
                         newrunstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
                     }
                 }
+            }
+            RunState::ShowHelp => {
+                let result = gui::help_screen(ctx);
+                match result {
+                    gui::HelpResult::NoSelection => {}
+                    gui::HelpResult::ReturnToGame => {
+                        newrunstate = RunState::AwaitingInput;
+                    }
+                }
+
             }
             RunState::MagicMapReveal{row} => {
                 let mut map = self.ecs.fetch_mut::<Map>();

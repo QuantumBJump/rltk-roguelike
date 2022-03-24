@@ -3,7 +3,8 @@ use specs::prelude::*;
 use super::{
     Pools, GameLog, Name, Map, Position, State, InBackpack,
     Viewshed, RunState, Equipped, HungerClock, HungerState, Hidden,
-    rex_assets::RexAssets, camera, Attributes, Attribute, Consumable
+    rex_assets::RexAssets, camera, Attributes, Attribute, Consumable,
+    options::OPTIONS, options::KeybindType,
 };
 
 pub fn draw_hollow_box(
@@ -618,4 +619,125 @@ pub fn game_over(ctx: &mut Rltk) -> GameOverResult {
             }
         }
     }
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum HelpResult { NoSelection, ReturnToGame }
+
+pub fn help_screen(ctx: &mut Rltk) -> HelpResult {
+    ctx.draw_box_double(15, 14, 49, 15, RGB::named(rltk::WHEAT), RGB::named(rltk::BLACK));
+    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Key help");
+    let mut y = 17;
+    let mut x = 17;
+    let keybinds = OPTIONS.lock().unwrap().keybinds;
+    match keybinds {
+        KeybindType::Vi => {
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[h] Move left");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[j] Move down");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[k] Move up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[l] Move right");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[y] Move left-up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[u] Move right-up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[n] Move left-down");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[m] Move right-down");
+            y = 17;
+            x = 37;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[;] Wait");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[d] Drop");
+            y += 1;
+        }
+        KeybindType::Numpad => {
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[8] Move up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[2] Move down");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[4] Move left");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[6] Move right");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[7] Move left-up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[9] Move right-up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[1] Move left-down");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[3] Move right-down");
+            y = 17;
+            x = 37;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[5] Wait");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[d] Drop");
+            y += 1;
+        }
+        KeybindType::Wasd => {
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[w] Move up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[a] Move left");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[s] Move down");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[d] Move right");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[q] Move left-up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[e] Move right-up");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[z] Move left-down");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[c] Move right-down");
+            y = 17;
+            x = 37;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[x] Wait");
+            y += 1;
+            print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[t] Drop");
+            y += 1;
+        }
+    }
+
+    print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[g] Pick up");
+    y += 1;
+    print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[i] Inventory");
+    y += 1;
+    print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[r] Remove equipment");
+    y += 1;
+    print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[/] Help");
+    y += 1;
+    print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[.] Descend");
+    y += 1;
+    print_with_brackets(ctx, x, y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "[Esc] Main menu");
+
+    match ctx.key {
+        None => HelpResult::NoSelection,
+        Some(key) => {
+            match key {
+                VirtualKeyCode::Escape |
+                VirtualKeyCode::Return => {
+                    HelpResult::ReturnToGame
+                },
+                _ => {HelpResult::NoSelection}
+            }
+        }
+    }
+}
+
+pub fn print_with_brackets(ctx: &mut Rltk, x: i32, y: i32, fg: RGB, bg: RGB, text: &str) {
+    let mut x: i32 = x;
+    let brackets: (usize, usize) = (text.find('[').unwrap(), text.find(']').unwrap());
+    let first_string = String::from(&text[..brackets.0+1]);
+    let second_string = String::from(&text[brackets.0+1..brackets.1]);
+    let third_string = String::from(&text[brackets.1..]);
+
+    ctx.print_color(x, y, fg, bg, &first_string);
+    x += first_string.len() as i32;
+    ctx.print_color(x, y, RGB::named(rltk::YELLOW), bg, &second_string);
+    x += second_string.len() as i32;
+    ctx.print_color(x, y, fg, bg, &third_string);
 }
