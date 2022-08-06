@@ -19,18 +19,19 @@ impl<'a> System<'a> for AnimalAI {
         ReadStorage<'a, Carnivore>,
         ReadStorage<'a, Item>,
         WriteStorage<'a, WantsToMelee>,
-        WriteStorage<'a, EntityMoved>,
-        WriteStorage<'a, Position>,
         WriteStorage<'a, Stunned>,
         WriteExpect<'a, ParticleBuilder>,
+        WriteStorage<'a, EntityMoved>,
+        WriteStorage<'a, Position>,
         WriteExpect<'a, rltk::RandomNumberGenerator>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (
             mut map, player_entity, runstate, entities, mut viewshed,
-            herbivore, carnivore, item, mut wants_to_melee, mut entity_moved,
-            mut position, mut stunned, mut particle_builder, mut rng
+            herbivore, carnivore, item, mut wants_to_melee, 
+            mut stunned, mut particle_builder, mut entity_moved,
+            mut position, mut rng
         ) = data;
 
         if *runstate != RunState::MonsterTurn { return; }

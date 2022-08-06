@@ -54,7 +54,7 @@ impl<'a> System<'a> for TriggerSystem {
                             let damages = inflicts_damage.get(*entity_id);
                             if let Some(damages) = damages {
                                 particle_builder.request(pos.x, pos.y, rltk::RGB::named(rltk::ORANGE), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('‼'), 200.0);
-                                SufferDamage::new_damage(&mut inflict_damage, entity, damages.damage);
+                                SufferDamage::new_damage(&mut inflict_damage, entity, damages.damage, false);
                             }
 
                             // If it is a single activation, mark it for deactivation

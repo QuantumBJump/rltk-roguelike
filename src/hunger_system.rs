@@ -67,7 +67,7 @@ impl<'a> System<'a> for HungerSystem {
                             if entity == *player_entity {
                                 gamelog.entries.push("Your hunger pangs are getting painful!".to_string());
                             }
-                            SufferDamage::new_damage(&mut inflict_damage, entity, 1);
+                            SufferDamage::new_damage(&mut inflict_damage, entity, 1, false);
                         }
                     }
                 }

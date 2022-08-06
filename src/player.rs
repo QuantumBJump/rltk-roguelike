@@ -18,6 +18,7 @@ enum Command {
     Remove,
     Menu,
     Descend,
+    Help,
     Undefined,
 }
 
@@ -78,6 +79,7 @@ fn key_to_command(key: VirtualKeyCode) -> Command {
         VirtualKeyCode::G => return Command::Get,
         VirtualKeyCode::I => return Command::Inventory,
         VirtualKeyCode::R => return Command::Remove,
+        VirtualKeyCode::Slash => return Command::Help,
         _ => {}
     }
     return Command::Undefined;
@@ -335,6 +337,9 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
 
                 // Menu
                 Command::Menu => return RunState::SaveGame,
+
+                // Show help
+                Command::Help => return RunState::ShowHelp,
 
                 _ => { return RunState::AwaitingInput } // Key not recognised
             }
