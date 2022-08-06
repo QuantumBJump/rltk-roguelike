@@ -1,4 +1,8 @@
-# v0.5.1
+# v0.6.0
+## Features
+* Added an XP system and leveling up
+  * Added xp bar
+* Added help menu
 ## Bugfixes
 * Animals are no longer immune to being stunned
 # v0.5.0
