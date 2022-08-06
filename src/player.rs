@@ -44,9 +44,9 @@ fn key_to_command(key: VirtualKeyCode) -> Command {
         KeybindType::Numpad => {
             match key {
                 VirtualKeyCode::Numpad4 => return Command::Move{x: -1,y: 0},
-                VirtualKeyCode::Numpad6 => return Command::Move{x: 0, y: 1},
+                VirtualKeyCode::Numpad6 => return Command::Move{x: 1, y: 0},
                 VirtualKeyCode::Numpad8 => return Command::Move{x: 0, y: -1},
-                VirtualKeyCode::Numpad2 => return Command::Move{x: 1, y: 0},
+                VirtualKeyCode::Numpad2 => return Command::Move{x: 0, y: 1},
                 VirtualKeyCode::Numpad7 => return Command::Move{x: -1, y: -1},
                 VirtualKeyCode::Numpad9 => return Command::Move{x: 1, y: -1},
                 VirtualKeyCode::Numpad1 => return Command::Move{x: -1, y: 1},
