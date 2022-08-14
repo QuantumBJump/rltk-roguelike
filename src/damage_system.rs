@@ -16,10 +16,11 @@ impl<'a> System<'a> for DamageSystem {
         Entities<'a>,
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Attributes>,
+        WriteExpect<'a, GameLog>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut stats, mut damage, positions, mut map, entities, player, attributes) = data;
+        let (mut stats, mut damage, positions, mut map, entities, player, attributes, mut log) = data;
         let mut xp_gain = 0;
 
         for (entity, mut stats, damage) in (&entities, &mut stats, &damage).join() {
@@ -53,6 +54,7 @@ impl<'a> System<'a> for DamageSystem {
                     player_stats.level
                 );
                 player_stats.mana.current = player_stats.mana.max;
+                log.entries.push(format!("Congratulations, you are now level {}!", player_stats.level));
             }
         }
 
