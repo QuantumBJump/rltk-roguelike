@@ -133,7 +133,7 @@ impl GameState for State {
         particle_system::cull_dead_particles(&mut self.ecs, ctx);
 
         match newrunstate {
-            // Only draw the map/entities/gui if we're not in the main menu
+            // Only draw the map/entities/gui if we're not in the main menu/gameover screen
             RunState::MainMenu{..} => {}
             RunState::GameOver{..} => {}
             _ => {
@@ -143,6 +143,7 @@ impl GameState for State {
         }
 
 
+        // TODO: why do we do this twice??
         {
             let runstate = self.ecs.fetch::<RunState>();
             newrunstate = *runstate;

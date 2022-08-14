@@ -33,7 +33,7 @@ impl<'a> System<'a> for DamageSystem {
                 }
 
                 if stats.hit_points.current < 1 && dmg.1 {
-                    xp_gain += stats.level * 100;
+                    xp_gain += stats.level * 1000;// TODO: change this back to 100 //
                 }
             }
         }
