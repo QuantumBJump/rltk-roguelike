@@ -27,10 +27,7 @@ pub struct Options {
 
 impl Options {
     pub fn new_default() -> Options {
-        Options {
-            keybinds: KeybindType::Vi,
-            vis_mapgen: false,
-        }
+        DEFAULT_OPTIONS
     }
 
     pub fn overwrite(&mut self, options: Options) {
@@ -44,11 +41,7 @@ pub fn apply(options: Options) {
 }
 
 pub fn apply_default() {
-    let default_options = Options{
-        keybinds: KeybindType::Vi,
-        vis_mapgen: false,
-    };
-    OPTIONS.lock().unwrap().overwrite(default_options)
+    OPTIONS.lock().unwrap().overwrite(DEFAULT_OPTIONS)
 }
 
 pub fn do_options_exist() -> bool {

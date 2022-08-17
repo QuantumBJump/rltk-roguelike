@@ -18,6 +18,7 @@ enum Command {
     Remove,
     Menu,
     Descend,
+    Help,
     Undefined,
 }
 
@@ -43,9 +44,9 @@ fn key_to_command(key: VirtualKeyCode) -> Command {
         KeybindType::Numpad => {
             match key {
                 VirtualKeyCode::Numpad4 => return Command::Move{x: -1,y: 0},
-                VirtualKeyCode::Numpad6 => return Command::Move{x: 0, y: 1},
+                VirtualKeyCode::Numpad6 => return Command::Move{x: 1, y: 0},
                 VirtualKeyCode::Numpad8 => return Command::Move{x: 0, y: -1},
-                VirtualKeyCode::Numpad2 => return Command::Move{x: 1, y: 0},
+                VirtualKeyCode::Numpad2 => return Command::Move{x: 0, y: 1},
                 VirtualKeyCode::Numpad7 => return Command::Move{x: -1, y: -1},
                 VirtualKeyCode::Numpad9 => return Command::Move{x: 1, y: -1},
                 VirtualKeyCode::Numpad1 => return Command::Move{x: -1, y: 1},
@@ -78,6 +79,7 @@ fn key_to_command(key: VirtualKeyCode) -> Command {
         VirtualKeyCode::G => return Command::Get,
         VirtualKeyCode::I => return Command::Inventory,
         VirtualKeyCode::R => return Command::Remove,
+        VirtualKeyCode::Slash => return Command::Help,
         _ => {}
     }
     return Command::Undefined;
@@ -335,6 +337,9 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
 
                 // Menu
                 Command::Menu => return RunState::SaveGame,
+
+                // Show help
+                Command::Help => return RunState::ShowHelp,
 
                 _ => { return RunState::AwaitingInput } // Key not recognised
             }

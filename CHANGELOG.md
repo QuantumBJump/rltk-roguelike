@@ -1,3 +1,13 @@
+# v0.6.0
+## Features
+* Added an XP system and leveling up
+  * Added xp bar
+  * Added particle effects on level up
+* Added help menu
+## Bugfixes
+* Animals are no longer immune to being stunned
+* The New Game option now works even in the middle of a game session
+
 # v0.5.0
 ## Features
 * Added forest level outside town
@@ -12,6 +22,7 @@
 ## Bugfixes
 * Bystanders no longer phase through the player
 * Monsters no longer constantly report the state of their memory
+
 # v0.4.0 (2021/05/25)
 ## Features
 * Added raw file decoder to allow for easier definition of spawnable entities
@@ -32,6 +43,7 @@
 * Monsters no longer pursue the player forever
 * Monsters can now see through open doors
 * The abandoned house in the starting village is no longer filled with an inordinate number of rats
+
 # v0.3.0 (2021/05/20)
 ## Features
 * Factored map building out into a module to improve extensibility

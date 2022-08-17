@@ -30,7 +30,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Name{ name: "Player".to_string() })
         .with(HungerClock{
             state: HungerState::WellFed,
-            duration: 20,
+            duration: 500, // TODO: change back to 20
         })
         .with(Attributes{
             might: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11)},
@@ -41,7 +41,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(skills)
         .with(Pools{
             hit_points: Pool{
-                current: player_hp_at_level(11, 1),
+                current: player_hp_at_level(51, 1), //TODO: change back to 11
                 max: player_hp_at_level(11, 1)
             },
             mana: Pool{
@@ -55,7 +55,10 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .build();
 
     // Starting equipment
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Rusty Longsword", SpawnType::Equipped{ by: player });
+    // TODO: remove Tower Shield/Longsword, return Rusty Longsword
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Longsword", SpawnType::Equipped{ by: player });
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Tower Shield", SpawnType::Equipped{ by: player });
+    // spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Rusty Longsword", SpawnType::Equipped{ by: player });
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Dried Sausage", SpawnType::Carried{by: player});
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Beer", SpawnType::Carried{by: player});
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Stained Tunic", SpawnType::Equipped{ by: player });
