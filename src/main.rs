@@ -185,7 +185,11 @@ impl GameState for State {
                     gui::MainMenuResult::NoSelection{ selected } => newrunstate = RunState::MainMenu{ menu_selection: selected },
                     gui::MainMenuResult::Selected{ selected } => {
                         match selected {
-                            gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
+                            gui::MainMenuSelection::NewGame => {
+                                self.game_over_cleanup();
+                                self.mapgen_next_state = Some(RunState::PreRun);
+                                newrunstate = RunState::MapGeneration;
+                            },
                             gui::MainMenuSelection::LoadGame => {
                                 saveload_system::load_game(&mut self.ecs);
                                 newrunstate = RunState::AwaitingInput;
@@ -304,6 +308,8 @@ impl GameState for State {
 
             }
             RunState::MagicMapReveal{row} => {
+                // The character has found a magic map which reveals the entire level.
+                // Reveal the entire level, one row at a time, then go to monster turn.
                 let mut map = self.ecs.fetch_mut::<Map>();
                 for x in 0..map.width {
                     let idx = map.xy_idx(x as i32, row);
@@ -542,12 +548,10 @@ fn main() -> rltk::BError {
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity);
 
-    gs.ecs.insert(RunState::MapGeneration{} );
+    gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::LoadGame } );
     gs.ecs.insert(gamelog::GameLog{ entries: vec!["Welcome to Rustlike!".to_string()]});
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());
-
-    gs.generate_world_map(1);
 
     rltk::main_loop(context, gs)
 }
