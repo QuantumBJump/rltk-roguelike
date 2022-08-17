@@ -1,7 +1,8 @@
 use specs::prelude::*;
 use super::{
     Pools, SufferDamage, Player, gamelog::GameLog, Name, RunState,
-    Position, Map, Equipped, InBackpack, LootTable, Attributes
+    Position, Map, Equipped, InBackpack, LootTable, Attributes,
+    particle_system::ParticleBuilder
 };
 use crate::gamesystem::{player_hp_at_level, mana_at_level};
 
@@ -17,10 +18,12 @@ impl<'a> System<'a> for DamageSystem {
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Attributes>,
         WriteExpect<'a, GameLog>,
+        WriteExpect<'a, ParticleBuilder>,
+        ReadExpect<'a, rltk::Point>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut stats, mut damage, positions, mut map, entities, player, attributes, mut log) = data;
+        let (mut stats, mut damage, positions, mut map, entities, player, attributes, mut log, mut particles, player_pos) = data;
         let mut xp_gain = 0;
 
         for (entity, mut stats, damage) in (&entities, &mut stats, &damage).join() {
@@ -54,6 +57,21 @@ impl<'a> System<'a> for DamageSystem {
                     player_stats.level
                 );
                 player_stats.mana.current = player_stats.mana.max;
+
+                for i in 0..10 {
+                    let mut particle_pos_y = player_pos.y-i;
+                    if particle_pos_y <=0 {
+                        particle_pos_y = 0;
+                    }
+
+                    particles.request(
+                      player_pos.x,
+                      particle_pos_y,
+                      rltk::RGB::named(rltk::GOLD),
+                      rltk::RGB::named(rltk::BLACK),
+                      rltk::to_cp437('░'),
+                      400.0)
+                }
                 log.entries.push(format!("Congratulations, you are now level {}!", player_stats.level));
             }
         }
